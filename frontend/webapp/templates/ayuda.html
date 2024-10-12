@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayuda</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .gradient-background {
+            background: linear-gradient(to right, #4f46e5, #3b82f6);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Navbar -->
+    <nav class="gradient-background text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="font-bold text-xl tracking-tight">My App</div>
+                <div class="flex space-x-2">
+                    <a href="{% url 'clasificar' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Cargar Archivo</a>
+                    <a href="{% url 'peticiones' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Peticiones</a>
+                    <a href="{% url 'ayuda' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Ayuda</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Ayuda</h1>
+
+        <!-- Tarjeta para Información del Estudiante -->
+        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Información del Estudiante</h2>
+            <p>Aquí puedes incluir información relevante sobre el estudiante, como:</p>
+            <ul class="list-disc ml-8 mt-2">
+                <li>Nombre: Josué David Velásquez Ixchop</li>
+                <li>Carnet: 202307705</li>
+                <li>Carrera: Ingeniería en Sistemas</li>
+                <li>Curso: Introducción a la Programación de Computadoras</li>
+                <li>Sección: A</li>
+            </ul>
+        </div>
+
+        <!-- Tarjeta para Documentación del Programa -->
+        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Documentación del Programa</h2>
+            <p>Aquí puedes incluir la documentación relevante del programa:</p>
+            <ul class="list-disc ml-8 mt-2">
+                <li>Descripción general del programa</li>
+                <li>Requisitos del sistema</li>
+                <li>Instrucciones de instalación</li>
+                <li>Guía de usuario</li>
+            </ul>
+        </div>
+
+        <p>Otras guías de uso:</p>
+        <ul class="list-disc ml-8">
+            <li>Guía de uso 1</li>
+            <li>Guía de uso 2</li>
+            <li>Guía de uso 3</li>
+        </ul>
+    </div>
+</body>
+</html>

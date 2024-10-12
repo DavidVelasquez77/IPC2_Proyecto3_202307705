@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificación de Mensajes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .gradient-background {
+            background: linear-gradient(to right, #4f46e5, #3b82f6);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Navbar -->
+    <nav class="gradient-background text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="font-bold text-xl tracking-tight">My App</div>
+                <div class="flex space-x-2">
+                    <a href="{% url 'clasificar' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Cargar Archivo</a>
+                    <a href="{% url 'peticiones' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Peticiones</a>
+                    <a href="{% url 'ayuda' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Ayuda</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">Clasificación de Mensajes de Redes Sociales</h1>
+        
+        <div class="flex flex-col md:flex-row gap-6 mb-6">
+            <!-- Input section -->
+            <div class="flex-1">
+                <div class="bg-white rounded-lg card-shadow p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700">Entrada</h2>
+                    <textarea class="w-full h-96 p-4 border border-gray-200 rounded-md bg-gray-50 focus:outline-none" readonly>{% if entrada %}{{ entrada }}{% else %}No se ha cargado ningún archivo.{% endif %}</textarea>
+                </div>
+            </div>
+
+            <!-- Output section -->
+            <div class="flex-1">
+                <div class="bg-white rounded-lg card-shadow p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700">Salida</h2>
+                    <textarea class="w-full h-96 p-4 border border-gray-200 rounded-md bg-gray-50 focus:outline-none" readonly>{% if resultados %}{{ resultados|safe }}{% else %}No se ha generado ninguna respuesta aún.{% endif %}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons and File Upload -->
+        <div class="flex justify-center items-center space-x-4">
+            <form action="{% url 'clasificar' %}" method="post" enctype="multipart/form-data" class="flex items-center space-x-4">
+                {% csrf_token %}
+                <div class="relative">
+                    <input type="file" id="fileInput" name="archivo" accept=".xml" required
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <label for="fileInput" 
+                           class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md transition duration-200 cursor-pointer">
+                        Seleccionar archivo
+                    </label>
+                </div>
+                <button type="submit" 
+                        class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                    Enviar
+                </button>
+            </form>
+
+            <form action="{% url 'reset_bd' %}" method="post" class="inline">
+                {% csrf_token %}
+                <button type="submit" 
+                        class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                    Reset
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

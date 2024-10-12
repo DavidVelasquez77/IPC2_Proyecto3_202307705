@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peticiones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .gradient-background {
+            background: linear-gradient(to right, #4f46e5, #3b82f6);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Navbar -->
+    <nav class="gradient-background text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="font-bold text-xl tracking-tight">My App</div>
+                <div class="flex space-x-2">
+                    <a href="{% url 'clasificar' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Cargar Archivo</a>
+                    <a href="{% url 'peticiones' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Peticiones</a>
+                    <a href="{% url 'ayuda' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Ayuda</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Peticiones</h1>
+
+        <!-- Consultar Datos -->
+        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Consultar Datos</h2>
+            <form action="{% url 'consultar_datos' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">Consultar Última Respuesta
+                </button>
+            </form>
+            <textarea class="w-full h-96 p-4 border border-gray-200 rounded-md bg-gray-50 focus:outline-none mt-4" readonly>
+                {% if resultados %}
+                {{ resultados|safe }}
+                {% else %}
+                No hay datos disponibles.
+                {% endif %}
+            </textarea>
+        </div>
+
+        <!-- Prueba de Mensaje -->
+        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Prueba de Mensaje</h2>
+            <form action="{% url 'prueba_mensaje' %}" method="post">
+                {% csrf_token %}
+                <textarea name="mensaje" class="w-full h-48 p-4 border border-gray-200 rounded-md bg-gray-50 focus:outline-none" required>
+<?xml version="1.0"?>
+<mensaje>
+Lugar y fecha: Guatemala, 01/04/2022 15:20 Usuario: map0002@usac.edu Red social: Facebook
+Hoy me inscribí en la USAC, no encontré parqueo e inicié molesto mi gestión, luego tuve que hacer cola y me indicaron que era la cola incorrecta, esto me enojó mucho y mejor me fui.
+</mensaje>
+                </textarea>
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md mt-4">Enviar Mensaje</button>
+            </form>
+            <textarea class="w-full h-48 p-4 border border-gray-200 rounded-md bg-gray-50 focus:outline-none mt-4" readonly>
+                {% if respuesta_xml %}
+                {{ respuesta_xml|safe }}
+                {% else %}
+                No hay respuesta generada aún.
+                {% endif %}
+            </textarea>
+        </div>
+
+        <!-- Resumen de Clasificación por Fecha -->
+        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Resumen de Clasificación por Fecha</h2>
+            <form action="{% url 'resumen_por_fecha' %}" method="post">
+                {% csrf_token %}
+                <div class="flex space-x-4 mb-4">
+                    <input type="date" name="fecha" required class="p-2 border rounded-md">
+                    <select name="empresa" class="p-2 border rounded-md">
+                        <option value="">Seleccionar Empresa</option>
+                        <option value="USAC">USAC</option>
+                        <!-- Agrega más empresas según sea necesario -->
+                    </select>
+                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md">Obtener Resumen</button>
+                </div>
+            </form>
+            <div class="bg-white rounded-lg p-6 mb-4">
+                <h3 class="text-lg font-semibold">Resultados de la Clasificación</h3>
+                <p>Total Mensajes: {{ total_mensajes }}</p>
+                <p>Total Positivos: {{ total_positivos }}</p>
+                <p>Total Negativos: {{ total_negativos }}</p>
+                <p>Total Neutros: {{ total_neutros }}</p>
+            </div>
+            <!-- Gráfico de resultados -->
+            <canvas id="resultChart" class="bg-white rounded-lg p-6 card-shadow"></canvas>
+        </div>
+
+        <!-- Resumen por Rango de Fechas -->
+        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Resumen por Rango de Fechas</h2>
+            <form action="{% url 'resumen_por_rango' %}" method="post">
+                {% csrf_token %}
+                <div class="flex space-x-4 mb-4">
+                    <input type="date" name="start_date" required class="p-2 border rounded-md">
+                    <input type="date" name="end_date" required class="p-2 border rounded-md">
+                    <select name="empresa" class="p-2 border rounded-md">
+                        <option value="">Seleccionar Empresa</option>
+                        <option value="USAC">USAC</option>
+                        <!-- Agrega más empresas según sea necesario -->
+                    </select>
+                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md">Obtener Rango</button>
+                </div>
+            </form>
+            <div class="bg-white rounded-lg p-6 mb-4">
+                <h3 class="text-lg font-semibold">Resultados de Rango de Fechas</h3>
+                <p>Total Mensajes: {{ total_mensajes }}</p>
+                <p>Total Positivos: {{ total_positivos }}</p>
+                <p>Total Negativos: {{ total_negativos }}</p>
+                <p>Total Neutros: {{ total_neutros }}</p>
+            </div>
+            <!-- Gráfico de resultados para rango de fechas -->
+            <canvas id="rangeChart" class="bg-white rounded-lg p-6 card-shadow"></canvas>
+        </div>
+
+        <!-- Botón para generar el reporte en PDF -->
+        <div class="flex justify-center mb-6">
+            <a href="{% url 'generar_reporte_pdf' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md">Generar Reporte en PDF</a>
+        </div>
+    </div>
+
+    <script>
+        // Lógica para crear el gráfico con Chart.js para resumen por fecha
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Total Mensajes', 'Total Positivos', 'Total Negativos', 'Total Neutros'],
+                datasets: [{
+                    label: 'Clasificación de Mensajes',
+                    data: [{{ total_mensajes }}, {{ total_positivos }}, {{ total_negativos }}, {{ total_neutros }}],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Lógica para crear el gráfico con Chart.js para rango de fechas
+        const rangeCtx = document.getElementById('rangeChart').getContext('2d');
+        const rangeChart = new Chart(rangeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Total Mensajes', 'Total Positivos', 'Total Negativos', 'Total Neutros'],
+                datasets: [{
+                    label: 'Clasificación de Mensajes por Rango de Fechas',
+                    data: [{{ total_mensajes }}, {{ total_positivos }}, {{ total_negativos }}, {{ total_neutros }}],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
