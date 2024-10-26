@@ -57,14 +57,24 @@ def clasificar_mensaje(mensaje, sentimientos_positivos, sentimientos_negativos):
     contenido = normalizar(mensaje.text)
     palabras = contenido.split()
     
+    # Contamos las palabras con sentimientos positivos y negativos
     palabras_positivas = sum(1 for palabra in palabras if palabra in sentimientos_positivos)
     palabras_negativas = sum(1 for palabra in palabras if palabra in sentimientos_negativos)
     
+    # Si no hay palabras del diccionario, el mensaje es neutro
+    if palabras_positivas == 0 and palabras_negativas == 0:
+        return "neutro"
+    
+    # Si hay igual cantidad de palabras positivas y negativas, el mensaje es neutro
+    if palabras_positivas == palabras_negativas:
+        return "neutro"
+        
+    # Si hay más palabras positivas, el mensaje es positivo
     if palabras_positivas > palabras_negativas:
         return "positivo"
-    elif palabras_negativas > palabras_positivas:
-        return "negativo"
-    return "neutro"
+    
+    # Si hay más palabras negativas, el mensaje es negativo
+    return "negativo"
 
 def agrupar_por_fecha(mensajes, empresas_data, sentimientos_positivos, sentimientos_negativos):
     mensajes_por_fecha = {}
