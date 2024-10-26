@@ -71,6 +71,9 @@ def agrupar_por_fecha(mensajes, empresas_data, sentimientos_positivos, sentimien
     
     for mensaje in mensajes:
         fecha = extraer_fecha(mensaje.text)
+        if not fecha:
+            continue
+            
         if fecha not in mensajes_por_fecha:
             mensajes_por_fecha[fecha] = {
                 'total': 0,
@@ -79,13 +82,8 @@ def agrupar_por_fecha(mensajes, empresas_data, sentimientos_positivos, sentimien
                 'neutros': 0,
                 'empresas': {}
             }
-            
-        # Incrementar contadores generales
-        clasificacion = clasificar_mensaje(mensaje, sentimientos_positivos, sentimientos_negativos)
-        mensajes_por_fecha[fecha]['total'] += 1
-        mensajes_por_fecha[fecha][clasificacion + 's'] += 1
         
-        # Analizar empresas y servicios mencionados
+        # Inicializar empresas si no existen
         contenido_normalizado = normalizar(mensaje.text)
         for empresa_data in empresas_data:
             nombre_empresa = normalizar(empresa_data.find('nombre').text)
@@ -97,21 +95,35 @@ def agrupar_por_fecha(mensajes, empresas_data, sentimientos_positivos, sentimien
                     'neutros': 0,
                     'servicios': {}
                 }
-            
+        
+        # Clasificar mensaje general
+        clasificacion_general = clasificar_mensaje(mensaje, sentimientos_positivos, sentimientos_negativos)
+        mensajes_por_fecha[fecha]['total'] += 1
+        mensajes_por_fecha[fecha][clasificacion_general + 's'] += 1
+        
+        # Analizar empresas y servicios mencionados
+        for empresa_data in empresas_data:
+            nombre_empresa = normalizar(empresa_data.find('nombre').text)
             empresa_mencionada = False
+            
+            # Verificar mención directa de la empresa
+            if nombre_empresa in contenido_normalizado:
+                empresa_mencionada = True
+            
             servicios = empresa_data.find('servicios')
             if servicios is not None:
                 for servicio in servicios.findall('servicio'):
                     nombre_servicio = normalizar(servicio.get('nombre'))
                     servicio_mencionado = False
                     
-                    # Verificar menciones del servicio a través de sus alias
+                    # Verificar menciones del servicio
                     for alias in servicio.findall('alias'):
                         if alias.text and normalizar(alias.text) in contenido_normalizado:
                             servicio_mencionado = True
                             empresa_mencionada = True
                             break
                     
+                    # Si el servicio fue mencionado, actualizar sus contadores
                     if servicio_mencionado:
                         if nombre_servicio not in mensajes_por_fecha[fecha]['empresas'][nombre_empresa]['servicios']:
                             mensajes_por_fecha[fecha]['empresas'][nombre_empresa]['servicios'][nombre_servicio] = {
@@ -121,12 +133,17 @@ def agrupar_por_fecha(mensajes, empresas_data, sentimientos_positivos, sentimien
                                 'neutros': 0
                             }
                         
+                        # Clasificar el sentimiento específico para el servicio
+                        clasificacion_servicio = clasificar_mensaje(mensaje, sentimientos_positivos, sentimientos_negativos)
                         mensajes_por_fecha[fecha]['empresas'][nombre_empresa]['servicios'][nombre_servicio]['total'] += 1
-                        mensajes_por_fecha[fecha]['empresas'][nombre_empresa]['servicios'][nombre_servicio][clasificacion + 's'] += 1
+                        mensajes_por_fecha[fecha]['empresas'][nombre_empresa]['servicios'][nombre_servicio][clasificacion_servicio + 's'] += 1
             
+            # Si la empresa fue mencionada (directamente o a través de servicios), actualizar sus contadores
             if empresa_mencionada:
+                # Clasificar el sentimiento específico para la empresa
+                clasificacion_empresa = clasificar_mensaje(mensaje, sentimientos_positivos, sentimientos_negativos)
                 mensajes_por_fecha[fecha]['empresas'][nombre_empresa]['total'] += 1
-                mensajes_por_fecha[fecha]['empresas'][nombre_empresa][clasificacion + 's'] += 1
+                mensajes_por_fecha[fecha]['empresas'][nombre_empresa][clasificacion_empresa + 's'] += 1
     
     return mensajes_por_fecha
 
@@ -134,23 +151,35 @@ def crear_xml_respuesta(mensajes_por_fecha):
     root = ET.Element('lista_respuestas')
     
     for fecha, datos in mensajes_por_fecha.items():
+        # Crear elemento respuesta
         respuesta = ET.SubElement(root, 'respuesta')
         
         # Agregar fecha
         fecha_elem = ET.SubElement(respuesta, 'fecha')
         fecha_elem.text = f" {fecha} "
         
-        # Agregar resumen de mensajes
+        # Agregar resumen de mensajes con indentación
         mensajes = ET.SubElement(respuesta, 'mensajes')
         ET.SubElement(mensajes, 'total').text = f" {datos['total']} "
         ET.SubElement(mensajes, 'positivos').text = f" {datos['positivos']} "
         ET.SubElement(mensajes, 'negativos').text = f" {datos['negativos']} "
         ET.SubElement(mensajes, 'neutros').text = f" {datos['neutros']} "
         
-        # Agregar análisis por empresa
+        # Agregar análisis
         analisis = ET.SubElement(respuesta, 'analisis')
-        for nombre_empresa, datos_empresa in datos['empresas'].items():
-            empresa = ET.SubElement(analisis, 'empresa', nombre=nombre_empresa)
+        
+        # Filtrar y ordenar empresas que tienen menciones
+        empresas_con_menciones = {
+            nombre: datos_empresa 
+            for nombre, datos_empresa in datos['empresas'].items() 
+            if datos_empresa['total'] > 0
+        }
+        
+        # Iterar sobre empresas que tienen menciones
+        for nombre_empresa, datos_empresa in empresas_con_menciones.items():
+            # Capitalizar el nombre de la empresa
+            nombre_empresa_cap = nombre_empresa.capitalize()
+            empresa = ET.SubElement(analisis, 'empresa', nombre=nombre_empresa_cap)
             
             # Agregar mensajes de la empresa
             mensajes_empresa = ET.SubElement(empresa, 'mensajes')
@@ -159,10 +188,11 @@ def crear_xml_respuesta(mensajes_por_fecha):
             ET.SubElement(mensajes_empresa, 'negativos').text = f" {datos_empresa['negativos']} "
             ET.SubElement(mensajes_empresa, 'neutros').text = f" {datos_empresa['neutros']} "
             
-            # Agregar servicios de la empresa
+            # Agregar servicios si existen
             servicios = ET.SubElement(empresa, 'servicios')
             for nombre_servicio, datos_servicio in datos_empresa['servicios'].items():
-                servicio = ET.SubElement(servicios, 'servicio', nombre=nombre_servicio)
+                # Mantener el formato original del nombre del servicio
+                servicio = ET.SubElement(servicios, 'servicio', nombre=nombre_servicio.title())
                 
                 # Agregar mensajes del servicio
                 mensajes_servicio = ET.SubElement(servicio, 'mensajes')
@@ -174,9 +204,17 @@ def crear_xml_respuesta(mensajes_por_fecha):
     return root
 
 def format_xml_pretty(elem):
+    """
+    Función personalizada para formatear el XML con la indentación deseada
+    """
     rough_string = ET.tostring(elem, 'utf-8')
     reparsed = minidom.parseString(rough_string)
-    return reparsed.toprettyxml(indent="  ")
+    # Usar 4 espacios para la indentación y preservar los espacios en blanco
+    formatted = reparsed.toprettyxml(indent='    ', newl='\n')
+    
+    # Eliminar líneas vacías extra pero mantener el espaciado dentro de los elementos
+    lines = [line for line in formatted.split('\n') if line.strip()]
+    return '\n'.join(lines)
 
 @app.route('/clasificar', methods=['POST'])
 def clasificar_mensajes():
@@ -205,8 +243,9 @@ def clasificar_mensajes():
         # Crear el XML de respuesta
         respuesta_xml = crear_xml_respuesta(mensajes_por_fecha)
         
-        # Formatear y devolver la respuesta
-        output_xml = format_xml_pretty(respuesta_xml)
+        # Formatear la respuesta con el formato específico
+        output_xml = '<?xml version="1.0"?>\n' + format_xml_pretty(respuesta_xml)
+        
         return output_xml, 200, {'Content-Type': 'application/xml'}
         
     except ET.ParseError:
