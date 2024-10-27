@@ -51,28 +51,57 @@
             </textarea>
         </div>
 
-        <!-- Prueba de Mensaje -->
-        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Prueba de Mensaje</h2>
-            <form action="{% url 'prueba_mensaje' %}" method="post">
-                {% csrf_token %}
-                <textarea name="mensaje" class="w-full h-48 p-4 border border-gray-200 rounded-md bg-gray-50 focus:outline-none" required>
-<?xml version="1.0"?>
-<mensaje>
-Lugar y fecha: Guatemala, 01/04/2022 15:20 Usuario: map0002@usac.edu Red social: Facebook
-Hoy me inscribí en la USAC, no encontré parqueo e inicié molesto mi gestión, luego tuve que hacer cola y me indicaron que era la cola incorrecta, esto me enojó mucho y mejor me fui.
-</mensaje>
-                </textarea>
-                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md mt-4">Enviar Mensaje</button>
-            </form>
-            <textarea class="w-full h-48 p-4 border border-gray-200 rounded-md bg-gray-50 focus:outline-none mt-4" readonly>
-                {% if respuesta_xml %}
-                {{ respuesta_xml|safe }}
-                {% else %}
-                No hay respuesta generada aún.
-                {% endif %}
-            </textarea>
+<!-- Prueba de Mensaje -->
+<div class="bg-white rounded-lg p-6 card-shadow mb-6">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">Prueba de Mensaje</h2>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="archivo_xml" class="block text-sm font-medium text-gray-700 mb-2">
+                Ingrese su mensaje en XML:
+            </label>
+            <textarea 
+                name="archivo_xml" 
+                id="archivo_xml" 
+                rows="10" 
+                class="w-full p-2 border border-gray-300 rounded-md font-mono"
+                placeholder="<?xml version=&quot;1.0&quot;?>
+    <mensaje>
+    Lugar y fecha: Guatemala, 01/04/2022 15:20
+    Usuario: ejemplo@usac.edu
+    Red social: Facebook
+    [Su mensaje aquí]
+    </mensaje>"
+                required></textarea>
         </div>
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+            Enviar
+        </button>
+    </form>
+
+    <!-- Botón adicional para redirigir a /prueba_mensaje -->
+    <div class="mt-4">
+        <a href="/prueba_mensaje" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded inline-block">
+            Ir a Prueba de Mensaje
+        </a>
+    </div>
+
+    <!-- Sección de respuesta -->
+    {% if mensaje_enviado %}
+        {% if respuesta_xml %}
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold mb-2 text-green-600">Respuesta recibida:</h3>
+                <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto whitespace-pre-wrap font-mono text-sm">{{ respuesta_xml|escape }}</pre>
+            </div>
+        {% else %}
+            <div class="mt-6">
+                <p class="text-red-500">Se envió el mensaje pero no se recibió una respuesta válida.</p>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
 
         <!-- Resumen de Clasificación por Fecha -->
         <div class="bg-white rounded-lg p-6 card-shadow mb-6">

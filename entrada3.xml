@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<solicitud_clasificacion>
+    <diccionario>
+        <sentimientos_positivos>
+            <palabra>feliz</palabra>
+            <palabra>extraordinario</palabra>
+            <palabra>genial</palabra>
+            <palabra>fantástico</palabra>
+            <palabra>increíble</palabra>
+        </sentimientos_positivos>
+        <sentimientos_negativos>
+            <palabra>terrible</palabra>
+            <palabra>pésimo</palabra>
+            <palabra>horrible</palabra>
+            <palabra>molesto</palabra>
+            <palabra>desagradable</palabra>
+        </sentimientos_negativos>
+        <empresas_analizar>
+            <empresa>
+                <nombre>Apple</nombre>
+                <servicios>
+                    <servicio nombre="Soporte">
+                        <alias>ayudado</alias>
+                        <alias>asistido</alias>
+                        <alias>resuelto</alias>
+                    </servicio>
+                    <servicio nombre="Garantía">
+                        <alias>garantizado</alias>
+                        <alias>cubierto</alias>
+                    </servicio>
+                </servicios>
+            </empresa>
+            <empresa>
+                <nombre>Samsung</nombre>
+                <servicios>
+                    <servicio nombre="Reparación">
+                        <alias>reparado</alias>
+                        <alias>arreglado</alias>
+                        <alias>compuesto</alias>
+                    </servicio>
+                </servicios>
+            </empresa>
+            <empresa>
+                <nombre>Microsoft</nombre>
+                <servicios>
+                    <servicio nombre="Actualización">
+                        <alias>actualizado</alias>
+                        <alias>renovado</alias>
+                    </servicio>
+                </servicios>
+            </empresa>
+        </empresas_analizar>
+    </diccionario>
+    <lista_mensajes>
+        <mensaje>
+            Lugar y fecha: Miami, 25/10/2024 14:30
+            Usuario: @TechLover
+            Red social: Twitter
+            Mi experiencia con el soporte de Apple fue extraordinario, me ayudado con mi iPhone y estoy feliz con el resultado.
+        </mensaje>
+        <mensaje>
+            Lugar y fecha: Chicago, 25/10/2024 15:45
+            Usuario: user123
+            Red social: Instagram
+            Terrible experiencia con Samsung, llevé mi teléfono a reparar y ha sido horrible el servicio. Muy desagradable el trato.
+        </mensaje>
+        <mensaje>
+            Lugar y fecha: Los Angeles, 26/10/2024 09:15
+            Usuario: tech.expert
+            Red social: LinkedIn
+            Microsoft ha actualizado mi sistema y todo funciona genial. El proceso fue fantástico y el equipo muy profesional.
+        </mensaje>
+        <mensaje>
+            Lugar y fecha: Nueva York, 26/10/2024 16:20
+            Usuario: gadget.guru
+            Red social: Facebook
+            La garantía de Apple no cubrió mi problema, pésimo servicio al cliente, me siento muy molesto con la situación.
+        </mensaje>
+        <mensaje>
+            Lugar y fecha: Houston, 27/10/2024 11:30
+            Usuario: @ReviewMaster
+            Red social: Twitter
+            Samsung arreglado mi tablet de forma increíble, aunque el tiempo de espera fue terrible. Sentimientos encontrados.
+        </mensaje>
+    </lista_mensajes>
+</solicitud_clasificacion>

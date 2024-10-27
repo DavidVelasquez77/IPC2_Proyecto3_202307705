@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+import json
 
 
 # Variable global para almacenar los resultados de la última respuesta
@@ -212,64 +213,39 @@ def generar_reporte_pdf(request):
     return response
 
 def prueba_mensaje(request):
-    respuesta_xml = ''
+    respuesta_xml = None  # Cambiado de '' a None para mejor control
+    mensaje_enviado = False
     
     if request.method == 'POST':
-        # Obtener el mensaje XML del formulario
-        mensaje_xml = request.POST.get('mensaje')
+        mensaje_xml = request.POST.get('archivo_xml', '')
+        print("Mensaje XML enviado:", mensaje_xml)  # Debug
         
-        # Convertir el mensaje XML a un elemento para su análisis
         try:
-            root = ET.fromstring(mensaje_xml)
-            mensaje_texto = root.find('mensaje').text.strip()
+            # Enviar el mensaje XML al backend Flask
+            response = requests.post(
+                'http://localhost:5000/prueba_mensaje',
+                json={'mensaje': mensaje_xml}
+            )
+            print("Respuesta del servidor:", response.text)  # Debug
             
-            # Extraer la información necesaria del mensaje
-            lugar_fecha = mensaje_texto.split('Lugar y fecha: ')[1].split('Usuario:')[0].strip()
-            fecha_str = lugar_fecha.split(', ')[1]
-            red_social = mensaje_texto.split('Red social: ')[1].split('Hoy')[0].strip()
-            usuario = mensaje_texto.split('Usuario: ')[1].split('Red social:')[0].strip()
-
-            # Clasificación del mensaje
-            palabras_positivas = 0
-            palabras_negativas = 0
-            clasificacion = clasificar_mensaje(root, sentimientos_positivos, sentimientos_negativos)
-
-            # Contar palabras positivas y negativas
-            palabras = mensaje_texto.lower().split()
-            for palabra in palabras:
-                if palabra in sentimientos_positivos:
-                    palabras_positivas += 1
-                elif palabra in sentimientos_negativos:
-                    palabras_negativas += 1
-
-            # Calcular sentimientos porcentuales
-            total_palabras = palabras_positivas + palabras_negativas
-            sentimiento_positivo = (palabras_positivas / total_palabras * 100) if total_palabras > 0 else 0
-            sentimiento_negativo = (palabras_negativas / total_palabras * 100) if total_palabras > 0 else 0
-
-            # Crear la respuesta XML
-            respuesta = ET.Element('respuesta')
-            ET.SubElement(respuesta, 'fecha').text = fecha_str
-            ET.SubElement(respuesta, 'red_social').text = red_social
-            ET.SubElement(respuesta, 'usuario').text = usuario
-            
-            empresas = ET.SubElement(respuesta, 'empresas')
-            empresa_element = ET.SubElement(empresas, 'empresa', nombre='USAC')
-            ET.SubElement(empresa_element, 'servicio').text = 'inscripción'  # Aquí puedes agregar más servicios según sea necesario
-
-            ET.SubElement(respuesta, 'palabras_positivas').text = str(palabras_positivas)
-            ET.SubElement(respuesta, 'palabras_negativas').text = str(palabras_negativas)
-            ET.SubElement(respuesta, 'sentimiento_positivo').text = f"{sentimiento_positivo:.2f}%"
-            ET.SubElement(respuesta, 'sentimiento_negativo').text = f"{sentimiento_negativo:.2f}%"
-            ET.SubElement(respuesta, 'sentimiento_analizado').text = clasificacion
-
-            # Convertir el XML de respuesta a cadena
-            respuesta_xml = ET.tostring(respuesta, encoding='utf-8').decode('utf-8')
-        
-        except Exception as e:
-            return HttpResponse(f"Error al procesar el mensaje: {str(e)}", status=400)
-
-    return render(request, 'peticiones.html', {'respuesta_xml': respuesta_xml})
+            if response.status_code == 200:
+                data = response.json()
+                respuesta_xml = data.get('respuesta_xml')
+                if respuesta_xml:
+                    mensaje_enviado = True
+                print("Respuesta XML procesada:", respuesta_xml)  # Debug
+            else:
+                print(f"Error del servidor: {response.status_code}")  # Debug
+                
+        except requests.exceptions.RequestException as e:
+            print(f"Error de conexión: {str(e)}")  # Debug
+            return HttpResponse(f"Error al conectar con el servidor: {str(e)}", status=500)
+    
+    context = {
+        'respuesta_xml': respuesta_xml,
+        'mensaje_enviado': mensaje_enviado
+    }
+    return render(request, 'peticiones.html', context)
 
 # Vista para resetear la base de datos
 def reset_bd(request):

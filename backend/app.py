@@ -1,3 +1,4 @@
+from flask_cors import CORS
 from flask import Flask, request, jsonify
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -8,7 +9,7 @@ import os
 from io import StringIO
 
 app = Flask(__name__)
-
+CORS(app) 
 def normalizar(texto):
     if texto is None:
         return ""
@@ -42,6 +43,7 @@ def procesar_diccionario(root):
                     sentimientos_negativos.append(normalizar(palabra.text))
 
     return sentimientos_positivos, sentimientos_negativos
+
 
 def clasificar_mensaje(mensaje, sentimientos_positivos, sentimientos_negativos):
     if mensaje.text is None:
@@ -256,6 +258,73 @@ def clasificar_mensajes():
     except Exception as e:
         return jsonify({'error': f'Error al procesar el archivo XML: {str(e)}'}), 400
 
+@app.route('/prueba_mensaje', methods=['POST'])
+def procesar_mensaje_individual():
+    try:
+        # Obtener el mensaje del request
+        datos = request.get_json()
+        mensaje_xml = datos.get('mensaje', '')
+        
+        # Parsear el mensaje XML
+        root = ET.fromstring(mensaje_xml)
+        mensaje_texto = root.text.strip() if root.text else ''
+        
+        # Crear un diccionario de sentimientos de prueba (deberías usar tu propio diccionario)
+        sentimientos_positivos = ['feliz', 'satisfecho', 'excelente', 'bueno']
+        sentimientos_negativos = ['molesto', 'enojado', 'mal', 'terrible']
+        
+        # Extraer información del mensaje
+        fecha_match = re.search(r'Lugar y fecha:.*?,\s*(\d{2}/\d{2}/\d{4})', mensaje_texto)
+        fecha = fecha_match.group(1) if fecha_match else ''
+        
+        usuario_match = re.search(r'Usuario:\s*([^\n]+)', mensaje_texto)
+        usuario = usuario_match.group(1).strip() if usuario_match else ''
+        
+        red_social_match = re.search(r'Red social:\s*([^\n]+)', mensaje_texto)
+        red_social = red_social_match.group(1).strip() if red_social_match else ''
+        
+        # Analizar sentimientos
+        palabras = normalizar(mensaje_texto).split()
+        palabras_positivas = sum(1 for palabra in palabras if palabra in sentimientos_positivos)
+        palabras_negativas = sum(1 for palabra in palabras if palabra in sentimientos_negativos)
+        
+        total_palabras = palabras_positivas + palabras_negativas
+        if total_palabras > 0:
+            sentimiento_positivo = (palabras_positivas / total_palabras * 100)
+            sentimiento_negativo = (palabras_negativas / total_palabras * 100)
+        else:
+            sentimiento_positivo = 0
+            sentimiento_negativo = 0
+        
+        # Determinar sentimiento
+        if palabras_positivas > palabras_negativas:
+            sentimiento = 'positivo'
+        elif palabras_negativas > palabras_positivas:
+            sentimiento = 'negativo'
+        else:
+            sentimiento = 'neutro'
+        
+        # Crear respuesta XML manualmente para asegurar el formato exacto
+        respuesta_xml = f'''<respuesta>
+    <fecha> {fecha} </fecha>
+    <red_social> {red_social} </red_social>
+    <usuario> {usuario} </usuario>
+    <empresas>
+        <empresa nombre="USAC">
+            <servicio> inscripción </servicio>
+        </empresa>
+    </empresas>
+    <palabras_positivas> {palabras_positivas} </palabras_positivas>
+    <palabras_negativas> {palabras_negativas} </palabras_negativas>
+    <sentimiento_positivo> {sentimiento_positivo:.2f}% </sentimiento_positivo>
+    <sentimiento_negativo> {sentimiento_negativo:.2f}% </sentimiento_negativo>
+    <sentimiento_analizado> {sentimiento} </sentimiento_analizado>
+</respuesta>'''
+        
+        return jsonify({'respuesta_xml': respuesta_xml})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
