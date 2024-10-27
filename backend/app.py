@@ -8,6 +8,10 @@ import re
 import os
 from io import StringIO
 
+# Declaramos las variables globales para guardar el diccionario
+sentimientos_positivos_global = []
+sentimientos_negativos_global = []
+
 app = Flask(__name__)
 CORS(app) 
 def normalizar(texto):
@@ -25,6 +29,7 @@ def extraer_fecha(mensaje):
     return None
 
 def procesar_diccionario(root):
+    global sentimientos_positivos_global, sentimientos_negativos_global
     sentimientos_positivos = []
     sentimientos_negativos = []
     
@@ -42,8 +47,11 @@ def procesar_diccionario(root):
                 if palabra.text:
                     sentimientos_negativos.append(normalizar(palabra.text))
 
-    return sentimientos_positivos, sentimientos_negativos
+    # Guardamos los sentimientos en las variables globales
+    sentimientos_positivos_global = sentimientos_positivos
+    sentimientos_negativos_global = sentimientos_negativos
 
+    return sentimientos_positivos, sentimientos_negativos
 
 def clasificar_mensaje(mensaje, sentimientos_positivos, sentimientos_negativos):
     if mensaje.text is None:
@@ -213,6 +221,7 @@ def parse_solicitudes(xml_content):
     except ET.ParseError as e:
         raise ValueError(f"Error al parsear el XML: {str(e)}")
 
+# En el endpoint de clasificar, procesamos el archivo XML y almacenamos el diccionario globalmente
 @app.route('/clasificar', methods=['POST'])
 def clasificar_mensajes():
     if 'archivo' not in request.files:
@@ -222,56 +231,37 @@ def clasificar_mensajes():
     xml_content = archivo.read().decode('utf-8')
     
     try:
-        # Procesar la(s) solicitud(es)
         solicitudes = parse_solicitudes(xml_content)
-        
         if not solicitudes:
             return jsonify({'error': 'No se encontraron solicitudes válidas en el XML'}), 400
         
-        # Crear un elemento raíz para todas las respuestas
         respuesta_root = ET.Element('lista_respuestas')
-        
-        # Procesar cada solicitud
         for solicitud in solicitudes:
-            # Procesar el diccionario y obtener los sentimientos
-            sentimientos_positivos, sentimientos_negativos = procesar_diccionario(solicitud)
-            
-            # Obtener la lista de mensajes y empresas
+            # Procesar el diccionario y guardar en variables globales
+            procesar_diccionario(solicitud)
+
             mensajes = solicitud.find('lista_mensajes').findall('mensaje')
             empresas_data = solicitud.find('diccionario').find('empresas_analizar').findall('empresa')
-            
-            # Agrupar y analizar mensajes por fecha
-            mensajes_por_fecha = agrupar_por_fecha(mensajes, empresas_data, sentimientos_positivos, sentimientos_negativos)
-            
-            # Crear el XML de respuesta para esta solicitud
+            mensajes_por_fecha = agrupar_por_fecha(mensajes, empresas_data, sentimientos_positivos_global, sentimientos_negativos_global)
             respuesta_xml = crear_xml_respuesta(mensajes_por_fecha)
-            
-            # Agregar las respuestas al elemento raíz
             for respuesta in respuesta_xml:
                 respuesta_root.append(respuesta)
-        
-        # Formatear la respuesta final con el formato específico
+
         output_xml = '<?xml version="1.0"?>\n' + format_xml_pretty(respuesta_root)
-        
         return output_xml, 200, {'Content-Type': 'application/xml'}
         
     except Exception as e:
         return jsonify({'error': f'Error al procesar el archivo XML: {str(e)}'}), 400
 
+
+# Endpoint `procesar_mensaje_individual` modificado para usar el diccionario global
 @app.route('/prueba_mensaje', methods=['POST'])
 def procesar_mensaje_individual():
     try:
-        # Obtener el mensaje del request
         datos = request.get_json()
         mensaje_xml = datos.get('mensaje', '')
-        
-        # Parsear el mensaje XML
         root = ET.fromstring(mensaje_xml)
         mensaje_texto = root.text.strip() if root.text else ''
-        
-        # Crear un diccionario de sentimientos de prueba (deberías usar tu propio diccionario)
-        sentimientos_positivos = ['feliz', 'satisfecho', 'excelente', 'bueno']
-        sentimientos_negativos = ['molesto', 'enojado', 'mal', 'terrible']
         
         # Extraer información del mensaje
         fecha_match = re.search(r'Lugar y fecha:.*?,\s*(\d{2}/\d{2}/\d{4})', mensaje_texto)
@@ -282,38 +272,21 @@ def procesar_mensaje_individual():
         
         red_social_match = re.search(r'Red social:\s*([^\n]+)', mensaje_texto)
         red_social = red_social_match.group(1).strip() if red_social_match else ''
-        
-        # Analizar sentimientos
+
         palabras = normalizar(mensaje_texto).split()
-        palabras_positivas = sum(1 for palabra in palabras if palabra in sentimientos_positivos)
-        palabras_negativas = sum(1 for palabra in palabras if palabra in sentimientos_negativos)
+        palabras_positivas = sum(1 for palabra in palabras if palabra in sentimientos_positivos_global)
+        palabras_negativas = sum(1 for palabra in palabras if palabra in sentimientos_negativos_global)
         
         total_palabras = palabras_positivas + palabras_negativas
-        if total_palabras > 0:
-            sentimiento_positivo = (palabras_positivas / total_palabras * 100)
-            sentimiento_negativo = (palabras_negativas / total_palabras * 100)
-        else:
-            sentimiento_positivo = 0
-            sentimiento_negativo = 0
+        sentimiento_positivo = (palabras_positivas / total_palabras * 100) if total_palabras > 0 else 0
+        sentimiento_negativo = (palabras_negativas / total_palabras * 100) if total_palabras > 0 else 0
         
-        # Determinar sentimiento
-        if palabras_positivas > palabras_negativas:
-            sentimiento = 'positivo'
-        elif palabras_negativas > palabras_positivas:
-            sentimiento = 'negativo'
-        else:
-            sentimiento = 'neutro'
+        sentimiento = 'positivo' if palabras_positivas > palabras_negativas else 'negativo' if palabras_negativas > palabras_positivas else 'neutro'
         
-        # Crear respuesta XML manualmente para asegurar el formato exacto
         respuesta_xml = f'''<respuesta>
     <fecha> {fecha} </fecha>
     <red_social> {red_social} </red_social>
     <usuario> {usuario} </usuario>
-    <empresas>
-        <empresa nombre="USAC">
-            <servicio> inscripción </servicio>
-        </empresa>
-    </empresas>
     <palabras_positivas> {palabras_positivas} </palabras_positivas>
     <palabras_negativas> {palabras_negativas} </palabras_negativas>
     <sentimiento_positivo> {sentimiento_positivo:.2f}% </sentimiento_positivo>
