@@ -333,13 +333,26 @@ def resumen_fecha():
             }), 200
         
         if empresa == 'todas':
-            # Obtener totales generales de la fecha
-            mensajes = respuesta.find('mensajes')
+            # Inicializar contadores para todas las empresas
+            total_mensajes = 0
+            total_positivos = 0
+            total_negativos = 0
+            total_neutros = 0
+            
+            # Sumar los totales de todas las empresas
+            for empresa_element in respuesta.findall(".//empresa"):
+                mensajes = empresa_element.find('mensajes')
+                if mensajes is not None:
+                    total_mensajes += int(mensajes.find('total').text)
+                    total_positivos += int(mensajes.find('positivos').text)
+                    total_negativos += int(mensajes.find('negativos').text)
+                    total_neutros += int(mensajes.find('neutros').text)
+            
             return jsonify({
-                'total_mensajes': int(mensajes.find('total').text),
-                'total_positivos': int(mensajes.find('positivos').text),
-                'total_negativos': int(mensajes.find('negativos').text),
-                'total_neutros': int(mensajes.find('neutros').text)
+                'total_mensajes': total_mensajes,
+                'total_positivos': total_positivos,
+                'total_negativos': total_negativos,
+                'total_neutros': total_neutros
             }), 200
         else:
             # Buscar la empresa específica
