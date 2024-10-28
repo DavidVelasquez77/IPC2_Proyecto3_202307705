@@ -13,4 +13,5 @@ urlpatterns = [
     path('prueba_mensaje/', views.prueba_mensaje, name='prueba_mensaje'),  # Ruta para prueba de mensaje
     path('resumen_fecha/', views.resumen_fecha, name='resumen_fecha'),  # Ruta para prueba de mensaje
     path('resumen_rango_fecha/', views.resumen_rango_fecha, name='resumen_rango_fecha'),  # Ruta para prueba de mensaje
+    path('guardar_pdf/', views.guardar_pdf, name='guardar_pdf'),
 ]

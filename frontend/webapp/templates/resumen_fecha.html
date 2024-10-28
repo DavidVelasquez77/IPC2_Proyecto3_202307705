@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Resumen de Clasificación por Fecha</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <style>
         .mensajes-container {
             margin-top: 20px;
@@ -63,6 +64,19 @@
     </style>
 </head>
 <body>
+        <!-- Navbar -->
+    <nav class="gradient-background text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="font-bold text-xl tracking-tight">My App</div>
+                <div class="flex space-x-2">
+                    <a href="{% url 'clasificar' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Cargar Archivo</a>
+                    <a href="{% url 'peticiones' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Peticiones</a>
+                    <a href="{% url 'ayuda' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Ayuda</a>
+                </div>
+            </div>
+        </div>
+    </nav>
     <h1>Resumen de Clasificación por Fecha</h1>
     
     <form method="post" action="{% url 'resumen_fecha' %}">
@@ -112,55 +126,100 @@
         <p>No se encontraron mensajes para los criterios seleccionados.</p>
     {% endif %}
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const ctx = document.getElementById('resultChart').getContext('2d');
-                const data = {
-                    labels: ['Positivos', 'Negativos', 'Neutros'],
-                    datasets: [{
-                        label: 'Cantidad de Mensajes',
-                        data: [{{ data.total_positivos }}, {{ data.total_negativos }}, {{ data.total_neutros }}],
-                        backgroundColor: [
-                            'rgba(75, 192, 192, 0.8)',
-                            'rgba(255, 99, 132, 0.8)',
-                            'rgba(201, 203, 207, 0.8)'
-                        ],
-                        borderColor: [
-                            'rgb(75, 192, 192)',
-                            'rgb(255, 99, 132)',
-                            'rgb(201, 203, 207)'
-                        ],
-                        borderWidth: 1
-                    }]
-                };
-                const config = {
-                    type: 'bar',
-                    data: data,
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                            },
-                            title: {
-                                display: true,
-                                text: 'Distribución de Sentimientos en Mensajes'
-                            }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Primero genera la gráfica
+            const ctx = document.getElementById('resultChart').getContext('2d');
+            const data = {
+                labels: ['Positivos', 'Negativos', 'Neutros'],
+                datasets: [{
+                    label: 'Cantidad de Mensajes',
+                    data: [{{ data.total_positivos }}, {{ data.total_negativos }}, {{ data.total_neutros }}],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(201, 203, 207, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(75, 192, 192)',
+                        'rgb(255, 99, 132)',
+                        'rgb(201, 203, 207)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            const config = {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    precision: 0
-                                }
+                        title: {
+                            display: true,
+                            text: 'Distribución de Sentimientos en Mensajes'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0
                             }
                         }
                     }
+                }
+            };
+            
+            // Crear el gráfico y luego generar el PDF
+            const chart = new Chart(ctx, config);
+    
+            // Función para generar el PDF
+            const generatePDF = () => {
+                const element = document.body; // Selecciona todo el cuerpo de la página
+                const now = new Date();
+                const filename = `resumen_${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}-${now.getSeconds().toString().padStart(2, '0')}.pdf`;
+            
+                const options = {
+                    filename: filename,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
                 };
-                new Chart(ctx, config);
-            });
-        </script>
+            
+                html2pdf()
+                    .from(element)
+                    .set(options)
+                    .toPdf()
+                    .get('pdf')
+                    .then(pdf => {
+                        // Enviar el PDF al servidor
+                        const formData = new FormData();
+                        formData.append('pdf', pdf.output('blob'), filename);
+            
+                        fetch('/guardar_pdf/', {
+                            method: 'POST',
+                            body: formData
+                        }).then(response => {
+                            if (response.ok) {
+                                console.log('PDF generado y guardado en el servidor.');
+                            } else {
+                                console.error('Error al guardar el PDF en el servidor.');
+                            }
+                        });
+                    });
+            };
+            
+    
+            // Llama a la función para generar el PDF después de un breve retraso para asegurar que la gráfica esté cargada
+            setTimeout(generatePDF, 500); // Retraso de 500 ms para asegurar la carga completa del gráfico
+        });
+    </script>
+
+        
     {% endif %}
 </body>
 </html>

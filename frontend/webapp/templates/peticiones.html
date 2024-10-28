@@ -6,6 +6,7 @@
     <title>Peticiones</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -123,74 +124,47 @@
         <div class="flex justify-center mb-6">
             <a href="{% url 'generar_reporte_pdf' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md">Generar Reporte en PDF</a>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Crear PDF al cargar la página
+                const generatePDF = () => {
+                    const element = document.body; // Selecciona el cuerpo de la página
+                    const options = {
+                        filename: `resumen_${new Date().toISOString().slice(0, 10)}.pdf`,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2 },
+                        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                    };
+        
+                    html2pdf()
+                        .from(element)
+                        .set(options)
+                        .toPdf()
+                        .get('pdf')
+                        .then(pdf => {
+                            // Enviar PDF al servidor
+                            const formData = new FormData();
+                            formData.append('pdf', pdf.output('blob'), options.filename);
+        
+                            fetch('/guardar_pdf/', {
+                                method: 'POST',
+                                body: formData
+                            }).then(response => {
+                                if (response.ok) {
+                                    console.log('PDF generado y guardado en el servidor.');
+                                } else {
+                                    console.error('Error al guardar el PDF en el servidor.');
+                                }
+                            });
+                        });
+                };
+        
+                // Llama a la función para generar el PDF al cargar la página
+                generatePDF();
+            });
+        </script>
+        
     </div>
-
-    <script>
-        // Lógica para crear el gráfico con Chart.js para resumen por fecha
-        const ctx = document.getElementById('resultChart').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Total Mensajes', 'Total Positivos', 'Total Negativos', 'Total Neutros'],
-                datasets: [{
-                    label: 'Clasificación de Mensajes',
-                    data: [{{ total_mensajes }}, {{ total_positivos }}, {{ total_negativos }}, {{ total_neutros }}],
-                    backgroundColor: [
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                    ],
-                    borderColor: [
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(255, 206, 86, 1)',
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Lógica para crear el gráfico con Chart.js para rango de fechas
-        const rangeCtx = document.getElementById('rangeChart').getContext('2d');
-        const rangeChart = new Chart(rangeCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Total Mensajes', 'Total Positivos', 'Total Negativos', 'Total Neutros'],
-                datasets: [{
-                    label: 'Clasificación de Mensajes por Rango de Fechas',
-                    data: [{{ total_mensajes }}, {{ total_positivos }}, {{ total_negativos }}, {{ total_neutros }}],
-                    backgroundColor: [
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                    ],
-                    borderColor: [
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(255, 206, 86, 1)',
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    </script>
 </body>
 </html>

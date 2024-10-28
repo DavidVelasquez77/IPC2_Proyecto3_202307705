@@ -537,3 +537,19 @@ def peticiones(request):
 # Vista para la página de Ayuda
 def ayuda(request):
     return render(request, 'ayuda.html', {'entrada': '', 'resultados': ''})  # Reiniciar entrada y resultados
+
+@csrf_exempt
+def guardar_pdf(request):
+    if request.method == 'POST' and 'pdf' in request.FILES:
+        pdf = request.FILES['pdf']
+        file_path = os.path.join(r'C:\Users\Vela\Desktop\IPC2\Proyecto3\frontend\pdfs', pdf.name)
+        
+        # Guarda el archivo en la carpeta especificada
+        with open(file_path, 'wb') as f:
+            for chunk in pdf.chunks():
+                f.write(chunk)
+        
+        return JsonResponse({'message': 'PDF guardado exitosamente'}, status=200)
+    
+    return JsonResponse({'message': 'Error al guardar PDF'}, status=400)
+
