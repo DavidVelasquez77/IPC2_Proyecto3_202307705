@@ -1,7 +1,7 @@
 from pyexpat.errors import messages
 from django.shortcuts import render
 import requests
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
@@ -11,6 +11,7 @@ import os
 from django.conf import settings
 from xml.dom import minidom
 from django.views.decorators.csrf import csrf_exempt
+from PyPDF2 import PdfMerger
 
 # Variable global para almacenar los resultados de la última respuesta
 last_result = None
@@ -273,78 +274,6 @@ def resumen_por_rango(request):
         'empresa': empresa,
     })
 
-# Nueva vista para generar el reporte en PDF
-def generar_reporte_pdf(request):
-    global last_result
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="reporte_mensajes.pdf"'
-
-    # Crear un objeto canvas para el PDF
-    p = canvas.Canvas(response, pagesize=letter)
-    width, height = letter
-
-    if last_result:
-        root = ET.fromstring(last_result)
-        # Inicia la posición del texto
-        y = height - 50
-
-        # Títulos del reporte
-        p.drawString(100, y, "Reporte de Clasificación de Mensajes")
-        y -= 20
-        p.drawString(100, y, "Datos de Mensajes Totales:")
-        y -= 20
-
-        # Inicializar contadores
-        total_mensajes = 0
-        total_positivos = 0
-        total_negativos = 0
-        total_neutros = 0
-
-        # Recorrer los mensajes para sumar las estadísticas
-        for mensaje in root.find('lista_mensajes').findall('mensaje'):
-            clasificacion = clasificar_mensaje(mensaje, sentimientos_positivos, sentimientos_negativos)
-            total_mensajes += 1
-            
-            if clasificacion == 'positivo':
-                total_positivos += 1
-            elif clasificacion == 'negativo':
-                total_negativos += 1
-            else:
-                total_neutros += 1
-        
-        # Añadir la información al PDF
-        p.drawString(100, y, f"Total Mensajes: {total_mensajes}")
-        y -= 20
-        p.drawString(100, y, f"Total Positivos: {total_positivos}")
-        y -= 20
-        p.drawString(100, y, f"Total Negativos: {total_negativos}")
-        y -= 20
-        p.drawString(100, y, f"Total Neutros: {total_neutros}")
-        
-        # Añadir información detallada por empresa y servicio
-        p.drawString(100, y, "Detalle por Empresa y Servicio:")
-        y -= 20
-
-        for empresa in root.find('diccionario').find('empresas_analizar').findall('empresa'):
-            nombre_empresa = empresa.find('nombre').text.strip()
-            p.drawString(100, y, f"Empresa: {nombre_empresa}")
-            y -= 20
-            
-            for servicio in empresa.find('servicios').findall('servicio'):
-                nombre_servicio = servicio.attrib['nombre']
-                # Simular algún conteo aquí, podrías hacer algo más detallado
-                p.drawString(120, y, f"Servicio: {nombre_servicio}")
-                y -= 20
-
-        # Finalizar el PDF
-        p.showPage()
-        p.save()
-    else:
-        p.drawString(100, height / 2, "No hay datos disponibles para generar el reporte.")
-        p.showPage()
-        p.save()
-
-    return response
 
 def prueba_mensaje(request):
     respuesta_xml = None  # Cambiado de '' a None para mejor control
@@ -553,3 +482,25 @@ def guardar_pdf(request):
     
     return JsonResponse({'message': 'Error al guardar PDF'}, status=400)
 
+def generar_reporte_pdf(request):
+    # Ruta a la carpeta donde están los PDFs
+    ruta_pdfs = r"C:\Users\Vela\Desktop\IPC2\Proyecto3\frontend\pdfs"
+    
+    # Crear el objeto de unificación de PDF
+    merger = PdfMerger()
+    
+    # Obtener una lista de archivos PDF en la carpeta
+    for archivo in os.listdir(ruta_pdfs):
+        if archivo.endswith(".pdf"):
+            # Agregar cada PDF al objeto merger
+            merger.append(os.path.join(ruta_pdfs, archivo))
+    
+    # Crear un archivo PDF unificado en memoria
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_unificado.pdf"'
+    
+    # Escribir el PDF unificado en la respuesta
+    merger.write(response)
+    merger.close()
+    
+    return response
