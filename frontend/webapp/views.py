@@ -1,3 +1,4 @@
+from pyexpat.errors import messages
 from django.shortcuts import render
 import requests
 from django.http import HttpResponse, JsonResponse
@@ -475,37 +476,48 @@ def resumen_rango_fecha(request):
     empresa = None
     mensajes = []
 
-    # Obtener empresas y fechas desde el backend de Flask
     try:
         response = requests.get('http://127.0.0.1:5000/empresas')
         empresas = response.json().get('empresas', [])
         response = requests.get('http://127.0.0.1:5000/fechas')
         fechas = response.json().get('fechas', [])
     except requests.exceptions.RequestException as e:
-        return HttpResponse(f"Error al obtener datos: {str(e)}", status=400)
+        messages.error(request, f"Error al obtener datos: {str(e)}")
+        return HttpResponse(status=400)
 
     if request.method == 'POST':
         fecha_inicio = request.POST.get('fecha_inicio')
         fecha_fin = request.POST.get('fecha_fin')
-        empresa = request.POST.get('empresa')
+        empresa = request.POST.get('empresa', 'todas')
+
+        # Validar que las fechas no estén vacías
+        if not fecha_inicio or not fecha_fin:
+            messages.error(request, "Las fechas son requeridas")
+            return HttpResponse(status=400)
 
         try:
-            # Obtener resumen de mensajes
+            # Asegurar formato correcto de fecha
+            datetime.strptime(fecha_inicio, '%d/%m/%Y')
+            datetime.strptime(fecha_fin, '%d/%m/%Y')
+
             response_summary = requests.post(
                 'http://127.0.0.1:5000/resumen_rango_fecha',
                 json={'fecha_inicio': fecha_inicio, 'fecha_fin': fecha_fin, 'empresa': empresa}
             )
             data = response_summary.json()
 
-            # Obtener mensajes filtrados
             response_messages = requests.post(
                 'http://127.0.0.1:5000/mensajes_filtrados_rango',
                 json={'fecha_inicio': fecha_inicio, 'fecha_fin': fecha_fin, 'empresa': empresa}
             )
             mensajes = response_messages.json().get('mensajes', [])
 
+        except ValueError as e:
+            messages.error(request, f"Error en formato de fecha: {str(e)}")
+            return HttpResponse(status=400)
         except requests.exceptions.RequestException as e:
-            return HttpResponse(f"Error al obtener los datos: {str(e)}", status=400)
+            messages.error(request, f"Error al obtener los datos: {str(e)}")
+            return HttpResponse(status=400)
 
     context = {
         'data': data,

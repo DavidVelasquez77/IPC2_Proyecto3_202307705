@@ -486,6 +486,10 @@ def resumen_rango_fecha():
         fecha_fin = request.json.get('fecha_fin')
         empresa = request.json.get('empresa')
 
+        # Convertir fechas a objetos datetime
+        fecha_inicio_dt = datetime.strptime(fecha_inicio, '%d/%m/%Y')
+        fecha_fin_dt = datetime.strptime(fecha_fin, '%d/%m/%Y')
+
         # Ruta del archivo XML
         xml_path = 'C:\\Users\\Vela\\Desktop\\IPC2\\Proyecto3\\frontend\\output_xml\\salida.xml'
 
@@ -501,8 +505,10 @@ def resumen_rango_fecha():
 
         # Iterar por cada fecha dentro del rango
         for respuesta in root.findall(".//respuesta"):
-            fecha_text = respuesta.find("fecha").text
-            if fecha_text >= fecha_inicio and fecha_text <= fecha_fin:
+            fecha_text = respuesta.find("fecha").text.strip()
+            fecha_respuesta = datetime.strptime(fecha_text, '%d/%m/%Y')
+            
+            if fecha_inicio_dt <= fecha_respuesta <= fecha_fin_dt:
                 if empresa == 'todas':
                     for empresa_element in respuesta.findall(".//empresa"):
                         mensajes = empresa_element.find('mensajes')
@@ -513,7 +519,7 @@ def resumen_rango_fecha():
                             total_neutros += int(mensajes.find('neutros').text)
                 else:
                     empresa_element = respuesta.find(f".//empresa[@nombre='{empresa}']")
-                    if empresa_element:
+                    if empresa_element is not None and empresa_element.find('mensajes') is not None:
                         mensajes = empresa_element.find('mensajes')
                         total_mensajes += int(mensajes.find('total').text)
                         total_positivos += int(mensajes.find('positivos').text)
@@ -527,16 +533,21 @@ def resumen_rango_fecha():
             'total_neutros': total_neutros
         }), 200
 
+    except ValueError as e:
+        return jsonify({'error': f'Error en formato de fecha: {str(e)}'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Ruta adicional para obtener los mensajes filtrados por rango de fechas
 @app.route('/mensajes_filtrados_rango', methods=['POST'])
 def mensajes_filtrados_rango():
     try:
         fecha_inicio = request.json.get('fecha_inicio')
         fecha_fin = request.json.get('fecha_fin')
         empresa = request.json.get('empresa')
+
+        # Convertir fechas a objetos datetime
+        fecha_inicio_dt = datetime.strptime(fecha_inicio, '%d/%m/%Y')
+        fecha_fin_dt = datetime.strptime(fecha_fin, '%d/%m/%Y')
 
         xml_path = 'C:\\Users\\Vela\\Desktop\\IPC2\\Proyecto3\\frontend\\output_xml\\salida.xml'
         tree = ET.parse(xml_path)
@@ -545,8 +556,10 @@ def mensajes_filtrados_rango():
         mensajes_resumen = []
 
         for respuesta in root.findall(".//respuesta"):
-            fecha_text = respuesta.find("fecha").text
-            if fecha_text >= fecha_inicio and fecha_text <= fecha_fin:
+            fecha_text = respuesta.find("fecha").text.strip()
+            fecha_respuesta = datetime.strptime(fecha_text, '%d/%m/%Y')
+            
+            if fecha_inicio_dt <= fecha_respuesta <= fecha_fin_dt:
                 empresas = respuesta.findall(".//empresa") if empresa == 'todas' else respuesta.findall(f".//empresa[@nombre='{empresa}']")
                 
                 for empresa_element in empresas:
@@ -556,6 +569,7 @@ def mensajes_filtrados_rango():
                         mensajes = servicio.find('mensajes')
 
                         mensaje_info = {
+                            'fecha': fecha_text,
                             'empresa': nombre_empresa,
                             'servicio': nombre_servicio,
                             'total': int(mensajes.find('total').text),
@@ -567,6 +581,8 @@ def mensajes_filtrados_rango():
 
         return jsonify({'mensajes': mensajes_resumen}), 200
 
+    except ValueError as e:
+        return jsonify({'error': f'Error en formato de fecha: {str(e)}'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
