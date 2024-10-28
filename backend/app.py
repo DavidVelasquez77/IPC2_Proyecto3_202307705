@@ -12,6 +12,12 @@ from io import StringIO
 sentimientos_positivos_global = []
 sentimientos_negativos_global = []
 
+# Cargar el archivo de entrada.xml al iniciar la aplicación
+ruta_entrada = r'C:\Users\Vela\Desktop\IPC2\Proyecto3\frontend\entrada\entrada.xml'
+empresas_servicios = {}
+sentimientos_positivos = []
+sentimientos_negativos = []
+
 app = Flask(__name__)
 CORS(app) 
 def normalizar(texto):
@@ -254,48 +260,101 @@ def clasificar_mensajes():
         return jsonify({'error': f'Error al procesar el archivo XML: {str(e)}'}), 400
 
 
-# Endpoint `procesar_mensaje_individual` modificado para usar el diccionario global
+def cargar_diccionario_y_empresas():
+    try:
+        tree = ET.parse(ruta_entrada)
+        root = tree.getroot()
+
+        # Parsear empresas y servicios
+        for empresa in root.find('.//empresas_analizar'):
+            nombre_empresa = empresa.find('nombre').text.strip().lower()
+            servicios = []
+            for servicio in empresa.find('servicios'):
+                nombre_servicio = servicio.get('nombre').strip().lower()
+                alias = [alias.text.strip().lower() for alias in servicio.findall('alias')]
+                servicios.append({'nombre': nombre_servicio, 'alias': alias})
+            empresas_servicios[nombre_empresa] = servicios
+
+        # Parsear sentimientos positivos y negativos
+        sentimientos_positivos.extend([palabra.text.strip().lower() for palabra in root.find('.//sentimientos_positivos')])
+        sentimientos_negativos.extend([palabra.text.strip().lower() for palabra in root.find('.//sentimientos_negativos')])
+
+    except Exception as e:
+        print(f"Error al cargar el archivo XML: {e}")
+
+# Llamar a la función al iniciar la aplicación
+cargar_diccionario_y_empresas()
+
+# Endpoint para procesar el mensaje individual
 @app.route('/prueba_mensaje', methods=['POST'])
 def procesar_mensaje_individual():
     try:
         datos = request.get_json()
         mensaje_xml = datos.get('mensaje', '')
+
+        # Parsear el XML del mensaje recibido
         root = ET.fromstring(mensaje_xml)
         mensaje_texto = root.text.strip() if root.text else ''
-        
-        # Extraer información del mensaje
+
+        # Extraer la fecha, el usuario y la red social
         fecha_match = re.search(r'Lugar y fecha:.*?,\s*(\d{2}/\d{2}/\d{4})', mensaje_texto)
         fecha = fecha_match.group(1) if fecha_match else ''
-        
+
         usuario_match = re.search(r'Usuario:\s*([^\n]+)', mensaje_texto)
         usuario = usuario_match.group(1).strip() if usuario_match else ''
-        
+
         red_social_match = re.search(r'Red social:\s*([^\n]+)', mensaje_texto)
         red_social = red_social_match.group(1).strip() if red_social_match else ''
 
-        palabras = normalizar(mensaje_texto).split()
-        palabras_positivas = sum(1 for palabra in palabras if palabra in sentimientos_positivos_global)
-        palabras_negativas = sum(1 for palabra in palabras if palabra in sentimientos_negativos_global)
+        # Normalización del mensaje para análisis
+        mensaje_normalizado = mensaje_texto.lower()
         
-        total_palabras = palabras_positivas + palabras_negativas
-        sentimiento_positivo = (palabras_positivas / total_palabras * 100) if total_palabras > 0 else 0
-        sentimiento_negativo = (palabras_negativas / total_palabras * 100) if total_palabras > 0 else 0
-        
-        sentimiento = 'positivo' if palabras_positivas > palabras_negativas else 'negativo' if palabras_negativas > palabras_positivas else 'neutro'
-        
+        # Identificar empresas y servicios mencionados en el mensaje
+        empresas_identificadas = []
+        for nombre_empresa, servicios in empresas_servicios.items():
+            if nombre_empresa in mensaje_normalizado:
+                empresa_info = {'nombre': nombre_empresa, 'servicios': []}
+                for servicio in servicios:
+                    if any(alias in mensaje_normalizado for alias in servicio['alias']):
+                        empresa_info['servicios'].append(servicio['nombre'])
+                if empresa_info['servicios']:
+                    empresas_identificadas.append(empresa_info)
+
+        # Identificar y contar palabras de sentimientos
+        palabras_positivas = sum(1 for palabra in sentimientos_positivos if palabra in mensaje_normalizado)
+        palabras_negativas = sum(1 for palabra in sentimientos_negativos if palabra in mensaje_normalizado)
+        total_palabras_sentimiento = palabras_positivas + palabras_negativas
+
+        # Calcular porcentajes de sentimientos
+        sentimiento_positivo_pct = (palabras_positivas / total_palabras_sentimiento * 100) if total_palabras_sentimiento > 0 else 0
+        sentimiento_negativo_pct = (palabras_negativas / total_palabras_sentimiento * 100) if total_palabras_sentimiento > 0 else 0
+        sentimiento_analizado = 'positivo' if sentimiento_positivo_pct > sentimiento_negativo_pct else 'negativo' if sentimiento_negativo_pct > 0 else 'neutral'
+
+        # Construir la sección de empresas en XML
+        empresas_xml = "<empresas>"
+        for empresa in empresas_identificadas:
+            servicios_xml = ''.join(f"<servicio>{servicio}</servicio>" for servicio in empresa['servicios'])
+            empresas_xml += f"""
+        <empresa nombre="{empresa['nombre']}">
+            {servicios_xml}
+        </empresa>"""
+        empresas_xml += "</empresas>"
+
+        # Construir respuesta XML
         respuesta_xml = f'''<respuesta>
-    <fecha> {fecha} </fecha>
-    <red_social> {red_social} </red_social>
-    <usuario> {usuario} </usuario>
-    <palabras_positivas> {palabras_positivas} </palabras_positivas>
-    <palabras_negativas> {palabras_negativas} </palabras_negativas>
-    <sentimiento_positivo> {sentimiento_positivo:.2f}% </sentimiento_positivo>
-    <sentimiento_negativo> {sentimiento_negativo:.2f}% </sentimiento_negativo>
-    <sentimiento_analizado> {sentimiento} </sentimiento_analizado>
+    <fecha>{fecha}</fecha>
+    <red_social>{red_social}</red_social>
+    <usuario>{usuario}</usuario>
+    {empresas_xml}
+    <palabras_positivas>{palabras_positivas}</palabras_positivas>
+    <palabras_negativas>{palabras_negativas}</palabras_negativas>
+    <sentimiento_positivo>{sentimiento_positivo_pct:.2f}%</sentimiento_positivo>
+    <sentimiento_negativo>{sentimiento_negativo_pct:.2f}%</sentimiento_negativo>
+    <sentimiento_analizado>{sentimiento_analizado}</sentimiento_analizado>
 </respuesta>'''
-        
+
         return jsonify({'respuesta_xml': respuesta_xml})
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 400
     

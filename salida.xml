@@ -1,145 +1,145 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <lista_respuestas>
     <respuesta>
         <fecha> 29/10/2024 </fecha>
-            <mensajes>
-                <total> 2 </total>
-                <positivos> 1 </positivos>
-                <negativos> 1 </negativos>
-                <neutros> 0 </neutros>
-            </mensajes>
-            <analisis>
-                <empresa nombre="Nike">
-                    <mensajes>
-                        <total> 1 </total>
-                        <positivos> 0 </positivos>
-                        <negativos> 1 </negativos>
-                        <neutros> 0 </neutros>
-                    </mensajes>
-                    <servicios>
-                        <servicio nombre="Cobrar">
-                            <mensajes>
-                                <total> 1 </total>
-                                <positivos> 0 </positivos>
-                                <negativos> 1 </negativos>
-                                <neutros> 0 </neutros>
-                            </mensajes>
-                        </servicio>
-                    </servicios>
-                </empresa>
-                <empresa nombre="Walmart">
-                    <mensajes>
-                        <total> 1 </total>
-                        <positivos> 1 </positivos>
-                        <negativos> 0 </negativos>
-                        <neutros> 0 </neutros>
-                    </mensajes>
-                    <servicios>
-                        <servicio nombre="aTENciÓn">
-                            <mensajes>
-                                <total> 1 </total>
-                                <positivos> 1 </positivos>
-                                <negativos> 0 </negativos>
-                                <neutros> 0 </neutros>
-                            </mensajes>
-                        </servicio>
-                    </servicios>
-                </empresa>
-            </analisis>
+        <mensajes>
+            <total> 2 </total>
+            <positivos> 1 </positivos>
+            <negativos> 1 </negativos>
+            <neutros> 0 </neutros>
+        </mensajes>
+        <analisis>
+            <empresa nombre="Nike">
+                <mensajes>
+                    <total> 1 </total>
+                    <positivos> 0 </positivos>
+                    <negativos> 1 </negativos>
+                    <neutros> 0 </neutros>
+                </mensajes>
+                <servicios>
+                    <servicio nombre="Cobrar">
+                        <mensajes>
+                            <total> 1 </total>
+                            <positivos> 0 </positivos>
+                            <negativos> 1 </negativos>
+                            <neutros> 0 </neutros>
+                        </mensajes>
+                    </servicio>
+                </servicios>
+            </empresa>
+            <empresa nombre="Walmart">
+                <mensajes>
+                    <total> 1 </total>
+                    <positivos> 1 </positivos>
+                    <negativos> 0 </negativos>
+                    <neutros> 0 </neutros>
+                </mensajes>
+                <servicios>
+                    <servicio nombre="Atencion">
+                        <mensajes>
+                            <total> 1 </total>
+                            <positivos> 1 </positivos>
+                            <negativos> 0 </negativos>
+                            <neutros> 0 </neutros>
+                        </mensajes>
+                    </servicio>
+                </servicios>
+            </empresa>
+        </analisis>
     </respuesta>
     <respuesta>
         <fecha> 01/11/2024 </fecha>
-            <mensajes>
-                <total> 1 </total>
-                <positivos> 0 </positivos>
-                <negativos> 0 </negativos>
-                <neutros> 1 </neutros>
-            </mensajes>
-            <analisis>
-                <empresa nombre="Adidas">
-                    <mensajes>
-                        <total> 1 </total>
-                        <positivos> 0 </positivos>
-                        <negativos> 0 </negativos>
-                        <neutros> 1 </neutros>
-                    </mensajes>
-                    <servicios>
-                        <servicio nombre="vENtA">
-                            <mensajes>
-                                <total> 1 </total>
-                                <positivos> 0 </positivos>
-                                <negativos> 0 </negativos>
-                                <neutros> 1 </neutros>
-                            </mensajes>
-                        </servicio>
-                    </servicios>
-                </empresa>
-            </analisis>
+        <mensajes>
+            <total> 1 </total>
+            <positivos> 0 </positivos>
+            <negativos> 0 </negativos>
+            <neutros> 1 </neutros>
+        </mensajes>
+        <analisis>
+            <empresa nombre="Adidas">
+                <mensajes>
+                    <total> 1 </total>
+                    <positivos> 0 </positivos>
+                    <negativos> 0 </negativos>
+                    <neutros> 1 </neutros>
+                </mensajes>
+                <servicios>
+                    <servicio nombre="Venta">
+                        <mensajes>
+                            <total> 1 </total>
+                            <positivos> 0 </positivos>
+                            <negativos> 0 </negativos>
+                            <neutros> 1 </neutros>
+                        </mensajes>
+                    </servicio>
+                </servicios>
+            </empresa>
+        </analisis>
     </respuesta>
     <respuesta>
         <fecha> 02/11/2024 </fecha>
-            <mensajes>
-                <total> 2 </total>
-                <positivos> 2 </positivos>
-                <negativos> 0 </negativos>
-                <neutros> 0 </neutros>
-            </mensajes>
-            <analisis>
-                <empresa nombre="Walmart">
-                    <mensajes>
-                        <total> 1 </total>
-                        <positivos> 1 </positivos>
-                        <negativos> 0 </negativos>
-                        <neutros> 0 </neutros>
-                    </mensajes>
-                    <servicios>
-                        <servicio nombre="aTENciÓn">
-                            <mensajes>
-                                <total> 1 </total>
-                                <positivos> 1 </positivos>
-                                <negativos> 0 </negativos>
-                                <neutros> 0 </neutros>
-                            </mensajes>
-                        </servicio>
-                    </servicios>
-                </empresa>
-                <empresa nombre="Adidas">
-                    <mensajes>
-                        <total> 1 </total>
-                        <positivos> 1 </positivos>
-                        <negativos> 0 </negativos>
-                        <neutros> 0 </neutros>
-                    </mensajes>
-                    <servicios>
-                        <servicio nombre="vENtA">
-                            <mensajes>
-                                <total> 1 </total>
-                                <positivos> 1 </positivos>
-                                <negativos> 0 </negativos>
-                                <neutros> 0 </neutros>
-                            </mensajes>
-                        </servicio>
-                    </servicios>
-                </empresa>
-                <empresa nombre="Nike">
-                    <mensajes>
-                        <total> 1 </total>
-                        <positivos> 1 </positivos>
-                        <negativos> 0 </negativos>
-                        <neutros> 0 </neutros>
-                    </mensajes>
-                    <servicios>
-                        <servicio nombre="Cobrar">
-                            <mensajes>
-                                <total> 1 </total>
-                                <positivos> 1 </positivos>
-                                <negativos> 0 </negativos>
-                                <neutros> 0 </neutros>
-                            </mensajes>
-                        </servicio>
-                    </servicios>
-                </empresa>
-            </analisis>
+        <mensajes>
+            <total> 2 </total>
+            <positivos> 1 </positivos>
+            <negativos> 0 </negativos>
+            <neutros> 1 </neutros>
+        </mensajes>
+        <analisis>
+            <empresa nombre="Nike">
+                <mensajes>
+                    <total> 1 </total>
+                    <positivos> 1 </positivos>
+                    <negativos> 0 </negativos>
+                    <neutros> 0 </neutros>
+                </mensajes>
+                <servicios>
+                    <servicio nombre="Cobrar">
+                        <mensajes>
+                            <total> 1 </total>
+                            <positivos> 1 </positivos>
+                            <negativos> 0 </negativos>
+                            <neutros> 0 </neutros>
+                        </mensajes>
+                    </servicio>
+                </servicios>
+            </empresa>
+            <empresa nombre="Adidas">
+                <mensajes>
+                    <total> 1 </total>
+                    <positivos> 1 </positivos>
+                    <negativos> 0 </negativos>
+                    <neutros> 0 </neutros>
+                </mensajes>
+                <servicios>
+                    <servicio nombre="Venta">
+                        <mensajes>
+                            <total> 1 </total>
+                            <positivos> 1 </positivos>
+                            <negativos> 0 </negativos>
+                            <neutros> 0 </neutros>
+                        </mensajes>
+                    </servicio>
+                </servicios>
+            </empresa>
+            <empresa nombre="Walmart">
+                <mensajes>
+                    <total> 1 </total>
+                    <positivos> 0 </positivos>
+                    <negativos> 0 </negativos>
+                    <neutros> 1 </neutros>
+                </mensajes>
+                <servicios>
+                    <servicio nombre="Atencion">
+                        <mensajes>
+                            <total> 1 </total>
+                            <positivos> 0 </positivos>
+                            <negativos> 0 </negativos>
+                            <neutros> 1 </neutros>
+                        </mensajes>
+                    </servicio>
+                </servicios>
+            </empresa>
+        </analisis>
     </respuesta>
 </lista_respuestas>
 
