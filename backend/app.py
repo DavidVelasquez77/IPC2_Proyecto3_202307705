@@ -478,5 +478,97 @@ def mensajes_filtrados():
         print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
+@app.route('/resumen_rango_fecha', methods=['POST'])
+def resumen_rango_fecha():
+    try:
+        # Obtener los parámetros de la solicitud
+        fecha_inicio = request.json.get('fecha_inicio')
+        fecha_fin = request.json.get('fecha_fin')
+        empresa = request.json.get('empresa')
+
+        # Ruta del archivo XML
+        xml_path = 'C:\\Users\\Vela\\Desktop\\IPC2\\Proyecto3\\frontend\\output_xml\\salida.xml'
+
+        if not os.path.exists(xml_path):
+            return jsonify({'error': 'Archivo XML no encontrado'}), 404
+
+        # Leer y parsear el archivo XML
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+
+        # Inicializar contadores
+        total_mensajes = total_positivos = total_negativos = total_neutros = 0
+
+        # Iterar por cada fecha dentro del rango
+        for respuesta in root.findall(".//respuesta"):
+            fecha_text = respuesta.find("fecha").text
+            if fecha_text >= fecha_inicio and fecha_text <= fecha_fin:
+                if empresa == 'todas':
+                    for empresa_element in respuesta.findall(".//empresa"):
+                        mensajes = empresa_element.find('mensajes')
+                        if mensajes is not None:
+                            total_mensajes += int(mensajes.find('total').text)
+                            total_positivos += int(mensajes.find('positivos').text)
+                            total_negativos += int(mensajes.find('negativos').text)
+                            total_neutros += int(mensajes.find('neutros').text)
+                else:
+                    empresa_element = respuesta.find(f".//empresa[@nombre='{empresa}']")
+                    if empresa_element:
+                        mensajes = empresa_element.find('mensajes')
+                        total_mensajes += int(mensajes.find('total').text)
+                        total_positivos += int(mensajes.find('positivos').text)
+                        total_negativos += int(mensajes.find('negativos').text)
+                        total_neutros += int(mensajes.find('neutros').text)
+
+        return jsonify({
+            'total_mensajes': total_mensajes,
+            'total_positivos': total_positivos,
+            'total_negativos': total_negativos,
+            'total_neutros': total_neutros
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Ruta adicional para obtener los mensajes filtrados por rango de fechas
+@app.route('/mensajes_filtrados_rango', methods=['POST'])
+def mensajes_filtrados_rango():
+    try:
+        fecha_inicio = request.json.get('fecha_inicio')
+        fecha_fin = request.json.get('fecha_fin')
+        empresa = request.json.get('empresa')
+
+        xml_path = 'C:\\Users\\Vela\\Desktop\\IPC2\\Proyecto3\\frontend\\output_xml\\salida.xml'
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+
+        mensajes_resumen = []
+
+        for respuesta in root.findall(".//respuesta"):
+            fecha_text = respuesta.find("fecha").text
+            if fecha_text >= fecha_inicio and fecha_text <= fecha_fin:
+                empresas = respuesta.findall(".//empresa") if empresa == 'todas' else respuesta.findall(f".//empresa[@nombre='{empresa}']")
+                
+                for empresa_element in empresas:
+                    nombre_empresa = empresa_element.get('nombre')
+                    for servicio in empresa_element.findall(".//servicio"):
+                        nombre_servicio = servicio.get('nombre')
+                        mensajes = servicio.find('mensajes')
+
+                        mensaje_info = {
+                            'empresa': nombre_empresa,
+                            'servicio': nombre_servicio,
+                            'total': int(mensajes.find('total').text),
+                            'positivos': int(mensajes.find('positivos').text),
+                            'negativos': int(mensajes.find('negativos').text),
+                            'neutros': int(mensajes.find('neutros').text)
+                        }
+                        mensajes_resumen.append(mensaje_info)
+
+        return jsonify({'mensajes': mensajes_resumen}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 if __name__ == '__main__':
     app.run(debug=True)

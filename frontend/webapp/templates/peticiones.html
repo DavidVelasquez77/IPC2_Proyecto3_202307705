@@ -114,28 +114,9 @@
         <!-- Resumen por Rango de Fechas -->
         <div class="bg-white rounded-lg p-6 card-shadow mb-6">
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Resumen por Rango de Fechas</h2>
-            <form action="{% url 'resumen_por_rango' %}" method="post">
-                {% csrf_token %}
-                <div class="flex space-x-4 mb-4">
-                    <input type="date" name="start_date" required class="p-2 border rounded-md">
-                    <input type="date" name="end_date" required class="p-2 border rounded-md">
-                    <select name="empresa" class="p-2 border rounded-md">
-                        <option value="">Seleccionar Empresa</option>
-                        <option value="USAC">USAC</option>
-                        <!-- Agrega más empresas según sea necesario -->
-                    </select>
-                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md">Obtener Rango</button>
-                </div>
-            </form>
-            <div class="bg-white rounded-lg p-6 mb-4">
-                <h3 class="text-lg font-semibold">Resultados de Rango de Fechas</h3>
-                <p>Total Mensajes: {{ total_mensajes }}</p>
-                <p>Total Positivos: {{ total_positivos }}</p>
-                <p>Total Negativos: {{ total_negativos }}</p>
-                <p>Total Neutros: {{ total_neutros }}</p>
-            </div>
-            <!-- Gráfico de resultados para rango de fechas -->
-            <canvas id="rangeChart" class="bg-white rounded-lg p-6 card-shadow"></canvas>
+            <a href="/resumen_rango_fecha" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded inline-block">
+                Ir a resumen_rango_fecha
+            </a>
         </div>
 
         <!-- Botón para generar el reporte en PDF -->

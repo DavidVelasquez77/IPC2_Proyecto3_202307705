@@ -466,6 +466,58 @@ def resumen_fecha(request):
     print(f"Contexto enviado al template: {context}")
     return render(request, 'resumen_fecha.html', context)
     
+def resumen_rango_fecha(request):
+    empresas = []
+    fechas = []
+    data = None
+    fecha_inicio = None
+    fecha_fin = None
+    empresa = None
+    mensajes = []
+
+    # Obtener empresas y fechas desde el backend de Flask
+    try:
+        response = requests.get('http://127.0.0.1:5000/empresas')
+        empresas = response.json().get('empresas', [])
+        response = requests.get('http://127.0.0.1:5000/fechas')
+        fechas = response.json().get('fechas', [])
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error al obtener datos: {str(e)}", status=400)
+
+    if request.method == 'POST':
+        fecha_inicio = request.POST.get('fecha_inicio')
+        fecha_fin = request.POST.get('fecha_fin')
+        empresa = request.POST.get('empresa')
+
+        try:
+            # Obtener resumen de mensajes
+            response_summary = requests.post(
+                'http://127.0.0.1:5000/resumen_rango_fecha',
+                json={'fecha_inicio': fecha_inicio, 'fecha_fin': fecha_fin, 'empresa': empresa}
+            )
+            data = response_summary.json()
+
+            # Obtener mensajes filtrados
+            response_messages = requests.post(
+                'http://127.0.0.1:5000/mensajes_filtrados_rango',
+                json={'fecha_inicio': fecha_inicio, 'fecha_fin': fecha_fin, 'empresa': empresa}
+            )
+            mensajes = response_messages.json().get('mensajes', [])
+
+        except requests.exceptions.RequestException as e:
+            return HttpResponse(f"Error al obtener los datos: {str(e)}", status=400)
+
+    context = {
+        'data': data,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'empresa': empresa,
+        'empresas': empresas,
+        'fechas': fechas,
+        'mensajes': mensajes
+    }
+    return render(request, 'resumen_rango_fecha.html', context)
+
 # Vista para la página de Peticiones
 def peticiones(request):
     return render(request, 'peticiones.html', {'resultados': ''})  # Reiniciar entrada y resultados

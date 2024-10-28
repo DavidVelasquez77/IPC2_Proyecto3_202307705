@@ -12,5 +12,5 @@ urlpatterns = [
     path('reporte_pdf/', views.generar_reporte_pdf, name='generar_reporte_pdf'),  # Ruta para generar PDF
     path('prueba_mensaje/', views.prueba_mensaje, name='prueba_mensaje'),  # Ruta para prueba de mensaje
     path('resumen_fecha/', views.resumen_fecha, name='resumen_fecha'),  # Ruta para prueba de mensaje
-
+    path('resumen_rango_fecha/', views.resumen_rango_fecha, name='resumen_rango_fecha'),  # Ruta para prueba de mensaje
 ]
