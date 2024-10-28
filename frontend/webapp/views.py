@@ -122,8 +122,23 @@ def clasificar(request):
 # Vista para consultar datos almacenados en la última respuesta
 def consultar_datos(request):
     global last_result
+    
+    # Imprimir los datos para debugging
     print("Contenido de last_result:")
     print(repr(last_result[:500]))  # Usar repr para ver caracteres especiales
+
+    # Enviar los datos a Flask mediante una solicitud POST
+    try:
+        flask_url = 'http://127.0.0.1:5000/update-last-result'  # La URL del endpoint en Flask
+        response = requests.post(flask_url, json={'last_result': last_result})  # Enviamos la lista como JSON
+        if response.status_code == 200:
+            print("Datos enviados con éxito al backend Flask.")
+        else:
+            print(f"Error al enviar datos: {response.status_code}")
+    except Exception as e:
+        print(f"Error en la comunicación con Flask: {e}")
+
+    # Renderizar la plantilla y pasar los datos de 'last_result'
     return render(request, 'peticiones.html', {'resultados': last_result})
 
 

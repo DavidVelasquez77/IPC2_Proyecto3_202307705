@@ -18,8 +18,11 @@ empresas_servicios = {}
 sentimientos_positivos = []
 sentimientos_negativos = []
 
+
 app = Flask(__name__)
 CORS(app) 
+
+last_result = {}
 def normalizar(texto):
     if texto is None:
         return ""
@@ -27,6 +30,7 @@ def normalizar(texto):
     texto = re.sub(r'\s+', ' ', texto).strip()
     return texto
 
+#EXPRESIONES REGULAR PARA LA FECHA 
 def extraer_fecha(mensaje):
     patron = r"Lugar y fecha:.*?,\s*(\d{2}/\d{2}/\d{4})"
     match = re.search(patron, mensaje)
@@ -671,6 +675,23 @@ def reset():
         import traceback
         print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
+
+# Endpoint para recibir y actualizar el valor de last_result desde el frontend
+@app.route('/update-last-result', methods=['POST'])
+def update_last_result():
+    global last_result
+    data = request.get_json()  # Obtener los datos enviados desde el frontend (como JSON)
+    
+    if 'last_result' in data:
+        last_result = data['last_result']  # Actualizamos el valor de last_result en el backend
+        return jsonify({"message": "last_result actualizado correctamente"}), 200
+    else:
+        return jsonify({"error": "last_result no enviado en el payload"}), 400
+
+# Endpoint para consultar el valor de last_result (el que hicimos antes)
+@app.route('/last-result', methods=['GET'])
+def get_last_result():
+    return jsonify(last_result)
 
 if __name__ == '__main__':
     app.run(debug=True)
