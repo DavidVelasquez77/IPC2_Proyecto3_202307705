@@ -247,7 +247,7 @@ def clasificar_mensajes():
             for respuesta in respuesta_xml:
                 respuesta_root.append(respuesta)
 
-        output_xml = '<?xml version="1.0"?>\n' + format_xml_pretty(respuesta_root)
+        output_xml = format_xml_pretty(respuesta_root)
         return output_xml, 200, {'Content-Type': 'application/xml'}
         
     except Exception as e:
@@ -298,6 +298,8 @@ def procesar_mensaje_individual():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+    
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -6,14 +6,76 @@ from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import json
-
+import os
+from django.conf import settings
+from xml.dom import minidom
 
 # Variable global para almacenar los resultados de la última respuesta
 last_result = None
 
-# Vista para manejar la carga de archivos y mostrar el contenido
+def save_xml_file(xml_content, filename):
+    """
+    Guarda el contenido XML en un archivo con formato correcto y limpio.
+    """
+    try:
+        # Crear directorio de salida si no existe
+        output_dir = os.path.join(settings.BASE_DIR, 'output_xml')
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Parsear el XML
+        xml_parsed = minidom.parseString(xml_content)
+        
+        # Personalizar el formato XML
+        pretty_xml = '<?xml version="1.0" ?>\n'
+        
+        # Obtener el nodo raíz y sus hijos
+        root = xml_parsed.documentElement
+        
+        # Función recursiva para formatear nodos
+        def format_node(node, level=0):
+            result = ''
+            indent = '  ' * level
+            
+            # Manejar nodos de elemento
+            if node.nodeType == node.ELEMENT_NODE:
+                # Abrir etiqueta con atributos
+                result += f'{indent}<{node.tagName}'
+                if node.attributes:
+                    for attr in node.attributes.items():
+                        result += f' {attr[0]}="{attr[1]}"'
+                
+                # Verificar si tiene contenido o hijos
+                if not node.childNodes or (len(node.childNodes) == 1 and node.firstChild.nodeType == node.TEXT_NODE):
+                    text_content = node.firstChild.data.strip() if node.firstChild else ''
+                    if text_content:
+                        result += f'>{text_content}</{node.tagName}>\n'
+                    else:
+                        result += '/>\n'
+                else:
+                    result += '>\n'
+                    # Procesar nodos hijos
+                    for child in node.childNodes:
+                        if child.nodeType != child.TEXT_NODE or child.data.strip():
+                            result += format_node(child, level + 1)
+                    result += f'{indent}</{node.tagName}>\n'
+            
+            return result
+        
+        # Formatear el documento completo
+        pretty_xml += format_node(root)
+        
+        # Guardar el archivo
+        file_path = os.path.join(output_dir, filename )
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(pretty_xml)
+        
+        return file_path
+    except Exception as e:
+        print(f"Error al guardar el archivo XML: {str(e)}")
+        return None
+
 def clasificar(request):
-    global last_result  # Asegúrate de que last_result sea accesible
+    global last_result
     entrada = ''
     resultados = ''
 
@@ -36,60 +98,129 @@ def clasificar(request):
             # Mostrar el resultado de la API
             resultados = response.text
             last_result = resultados  # Guardar el resultado de la última clasificación
+            
+            # Generar nombre de archivo con timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f'clasificacion_{timestamp}.xml'
+            
+            # Guardar el archivo XML
+            saved_path = save_xml_file(resultados, filename)
+            if saved_path:
+                resultados += f"\n\nArchivo XML guardado en: {saved_path}"
+            else:
+                resultados += "\n\nError al guardar el archivo XML"
         else:
             return HttpResponse(f"Error al clasificar los mensajes: {response.text}", status=response.status_code)
 
-    # Si es un GET o no se ha enviado un archivo
     return render(request, 'index.html', {'resultados': resultados, 'entrada': entrada})
+
 
 
 # Vista para consultar datos almacenados en la última respuesta
 def consultar_datos(request):
     global last_result
+    print("Contenido de last_result:")
+    print(repr(last_result[:500]))  # Usar repr para ver caracteres especiales
     return render(request, 'peticiones.html', {'resultados': last_result})
 
 # Nueva vista para el resumen de clasificación por fecha
 def resumen_por_fecha(request):
     fecha = ''
     empresa = ''
-    total_mensajes = 0
-    total_positivos = 0
-    total_negativos = 0
-    total_neutros = 0
+    resultados = {
+        'total_mensajes': 0,
+        'total_positivos': 0,
+        'total_negativos': 0,
+        'total_neutros': 0,
+        'empresas_disponibles': []
+    }
 
     if request.method == 'POST':
         fecha = request.POST.get('fecha')
-        empresa = request.POST.get('empresa')
+        empresa = request.POST.get('empresa', '')
 
-        # Lógica para filtrar resultados de la última respuesta
         if last_result:
-            root = ET.fromstring(last_result)
-            for mensaje in root.find('lista_mensajes').findall('mensaje'):
-                # Extraer la fecha del mensaje
-                lugar_y_fecha = mensaje.text.split('Lugar y fecha: ')[1].split('Usuario:')[0].strip()
-                mensaje_fecha = datetime.strptime(lugar_y_fecha.split(', ')[1], '%d/%m/%Y %H:%M')
+            try:
+                # Limpiamos el XML antes de parsearlo
+                xml_content = last_result.strip()
+                # Si el XML comienza con BOM o espacios, los removemos
+                if xml_content.startswith('<?xml'):
+                    root = ET.fromstring(xml_content)
+                else:
+                    # Buscamos el inicio real del XML
+                    xml_start = xml_content.find('<?xml')
+                    if xml_start != -1:
+                        xml_content = xml_content[xml_start:]
+                    root = ET.fromstring(xml_content)
 
-                # Verificar si la fecha coincide
-                if mensaje_fecha.date().strftime('%d/%m/%Y') == fecha:
-                    # Aquí puedes implementar la lógica para verificar la empresa
-                    # Por simplicidad, supongamos que todos los mensajes son relevantes
-                    total_mensajes += 1
-                    clasificacion = clasificar_mensaje(mensaje, sentimientos_positivos, sentimientos_negativos)
+                # Debugging
+                print("Fecha recibida:", fecha)
+                print("Empresa recibida:", empresa)
 
-                    if clasificacion == 'positivo':
-                        total_positivos += 1
-                    elif clasificacion == 'negativo':
-                        total_negativos += 1
-                    else:
-                        total_neutros += 1
+                # Obtener lista de empresas disponibles
+                empresas_element = root.find('.//empresas_analizar')
+                if empresas_element is not None:
+                    resultados['empresas_disponibles'] = [
+                        emp.find('nombre').text.strip() 
+                        for emp in empresas_element.findall('empresa')
+                        if emp.find('nombre') is not None
+                    ]
+                    print("Empresas disponibles:", resultados['empresas_disponibles'])
+
+                # Procesar mensajes
+                mensajes_element = root.find('.//lista_mensajes')
+                if mensajes_element is not None:
+                    for mensaje in mensajes_element.findall('mensaje'):
+                        try:
+                            # Extraer y parsear la fecha del mensaje
+                            texto_mensaje = mensaje.text if mensaje.text else ""
+                            if 'Lugar y fecha: ' in texto_mensaje:
+                                lugar_y_fecha = texto_mensaje.split('Lugar y fecha: ')[1].split('Usuario:')[0].strip()
+                                mensaje_fecha = datetime.strptime(lugar_y_fecha.split(', ')[1], '%d/%m/%Y %H:%M')
+                                mensaje_fecha_str = mensaje_fecha.strftime('%Y-%m-%d')
+                                
+                                print(f"Comparando fechas - Mensaje: {mensaje_fecha_str}, Filtro: {fecha}")
+
+                                # Verificar si el mensaje corresponde a la empresa seleccionada
+                                es_empresa_correcta = True
+                                if empresa:
+                                    es_empresa_correcta = empresa.lower() in texto_mensaje.lower()
+                                    print(f"Verificando empresa - Buscando: {empresa}, Encontrada: {es_empresa_correcta}")
+
+                                # Si la fecha coincide y es la empresa correcta (o no se seleccionó empresa)
+                                if mensaje_fecha_str == fecha and es_empresa_correcta:
+                                    resultados['total_mensajes'] += 1
+                                    
+                                    # Obtener el sentimiento
+                                    sentimiento = mensaje.get('sentimiento', 'neutro').lower()
+                                    if sentimiento == 'positivo':
+                                        resultados['total_positivos'] += 1
+                                    elif sentimiento == 'negativo':
+                                        resultados['total_negativos'] += 1
+                                    else:
+                                        resultados['total_neutros'] += 1
+                                    
+                                    print(f"Mensaje contabilizado - Sentimiento: {sentimiento}")
+
+                        except (ValueError, IndexError) as e:
+                            print(f"Error procesando mensaje individual: {e}")
+                            continue
+
+            except ET.ParseError as e:
+                print(f"Error al parsear XML: {e}")
+                print("Contenido XML problemático:", last_result[:200])  # Primeros 200 caracteres para debug
+
+    # Imprimir resultados finales para debugging
+    print("Resultados finales:", resultados)
 
     return render(request, 'peticiones.html', {
-        'total_mensajes': total_mensajes,
-        'total_positivos': total_positivos,
-        'total_negativos': total_negativos,
-        'total_neutros': total_neutros,
         'fecha': fecha,
         'empresa': empresa,
+        'total_mensajes': resultados['total_mensajes'],
+        'total_positivos': resultados['total_positivos'],
+        'total_negativos': resultados['total_negativos'],
+        'total_neutros': resultados['total_neutros'],
+        'empresas_disponibles': resultados['empresas_disponibles']
     })
     
 # Nueva vista para el resumen por rango de fechas

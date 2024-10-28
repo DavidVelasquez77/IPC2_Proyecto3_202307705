@@ -111,9 +111,12 @@
                 <div class="flex space-x-4 mb-4">
                     <input type="date" name="fecha" required class="p-2 border rounded-md">
                     <select name="empresa" class="p-2 border rounded-md">
-                        <option value="">Seleccionar Empresa</option>
-                        <option value="USAC">USAC</option>
-                        <!-- Agrega más empresas según sea necesario -->
+                        <option value="">Todas las empresas</option>
+                        {% for empresa in empresas_disponibles %}
+                            <option value="{{ empresa }}" {% if empresa == empresa_seleccionada %}selected{% endif %}>
+                                {{ empresa }}
+                            </option>
+                        {% endfor %}
                     </select>
                     <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md">Obtener Resumen</button>
                 </div>
@@ -127,6 +130,76 @@
             </div>
             <!-- Gráfico de resultados -->
             <canvas id="resultChart" class="bg-white rounded-lg p-6 card-shadow"></canvas>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Obtener el elemento canvas
+                    const chartCanvas = document.getElementById('resultChart');
+                    
+                    if (chartCanvas) {
+                        const ctx = chartCanvas.getContext('2d');
+                        
+                        // Obtener los datos del backend
+                        const totalPositivos = parseInt("{{ total_positivos|default:0 }}");
+                        const totalNegativos = parseInt("{{ total_negativos|default:0 }}");
+                        const totalNeutros = parseInt("{{ total_neutros|default:0 }}");
+                        
+                        console.log("Datos para el gráfico:", {
+                            positivos: totalPositivos,
+                            negativos: totalNegativos,
+                            neutros: totalNeutros
+                        });
+                
+                        // Destruir el gráfico anterior si existe
+                        if (window.myChart instanceof Chart) {
+                            window.myChart.destroy();
+                        }
+                
+                        // Crear el nuevo gráfico
+                        window.myChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Positivos', 'Negativos', 'Neutros'],
+                                datasets: [{
+                                    label: 'Cantidad de Mensajes',
+                                    data: [totalPositivos, totalNegativos, totalNeutros],
+                                    backgroundColor: [
+                                        'rgba(75, 192, 192, 0.8)',  // Verde para positivos
+                                        'rgba(255, 99, 132, 0.8)',  // Rojo para negativos
+                                        'rgba(201, 203, 207, 0.8)'  // Gris para neutros
+                                    ],
+                                    borderColor: [
+                                        'rgb(75, 192, 192)',
+                                        'rgb(255, 99, 132)',
+                                        'rgb(201, 203, 207)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Distribución de Sentimientos en Mensajes'
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            stepSize: 1,
+                                            precision: 0
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+                </script>
         </div>
 
         <!-- Resumen por Rango de Fechas -->
