@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resumen de Clasificación por Fecha</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Resumen de Clasificación por Fecha</h1>
+    <form method="post" action="{% url 'resumen_fecha' %}">
+        {% csrf_token %}
+        <label for="fecha">Fecha:</label>
+        <select id="fecha" name="fecha" required>
+            {% for fecha in fechas %}
+                <option value="{{ fecha }}">{{ fecha }}</option>
+            {% endfor %}
+        </select>
+        <label for="empresa">Empresa:</label>
+        <select id="empresa" name="empresa" required>
+            <option value="todas">Todas</option>
+            {% for emp in empresas %}
+                <option value="{{ emp }}">{{ emp }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    {% if data %}
+        <h2>Resultados para {{ fecha }} y {{ empresa }}</h2>
+        <p>Total de Mensajes: {{ data.total_mensajes }}</p>
+        <p>Total de Mensajes Positivos: {{ data.total_positivos }}</p>
+        <p>Total de Mensajes Negativos: {{ data.total_negativos }}</p>
+        <p>Total de Mensajes Neutros: {{ data.total_neutros }}</p>
+
+        <canvas id="resultChart"></canvas>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ctx = document.getElementById('resultChart').getContext('2d');
+                const data = {
+                    labels: ['Positivos', 'Negativos', 'Neutros'],
+                    datasets: [{
+                        label: 'Cantidad de Mensajes',
+                        data: [{{ data.total_positivos }}, {{ data.total_negativos }}, {{ data.total_neutros }}],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.8)',  // Verde para positivos
+                            'rgba(255, 99, 132, 0.8)',  // Rojo para negativos
+                            'rgba(201, 203, 207, 0.8)'  // Gris para neutros
+                        ],
+                        borderColor: [
+                            'rgb(75, 192, 192)',
+                            'rgb(255, 99, 132)',
+                            'rgb(201, 203, 207)'
+                        ],
+                        borderWidth: 1
+                    }]
+                };
+                const config = {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Distribución de Sentimientos en Mensajes'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                };
+                new Chart(ctx, config);
+            });
+        </script>
+    {% endif %}
+</body>
+</html>

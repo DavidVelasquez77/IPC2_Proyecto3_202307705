@@ -123,6 +123,7 @@ def consultar_datos(request):
     print(repr(last_result[:500]))  # Usar repr para ver caracteres especiales
     return render(request, 'peticiones.html', {'resultados': last_result})
 
+
 # Nueva vista para el resumen de clasificación por fecha
 def resumen_por_fecha(request):
     fecha = ''
@@ -386,6 +387,45 @@ def reset_bd(request):
             return render(request, 'index.html', {'resultados': 'Base de datos reseteada', 'entrada': ''})  # Reiniciar entrada
         else:
             return HttpResponse(f"Error al resetear la base de datos: {response.text}", status=response.status_code)
+
+
+def resumen_fecha(request):
+    empresas = []
+    fechas = []
+    data = None
+    fecha = None
+    empresa = None
+
+    # Obtener la lista de empresas
+    try:
+        response = requests.get('http://127.0.0.1:5000/empresas')
+        response.raise_for_status()
+        empresas = response.json().get('empresas', [])
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error al obtener la lista de empresas: {str(e)}", status=400)
+
+    # Obtener la lista de fechas
+    try:
+        response = requests.get('http://127.0.0.1:5000/fechas')
+        response.raise_for_status()
+        fechas = response.json().get('fechas', [])
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error al obtener la lista de fechas: {str(e)}", status=400)
+
+    if request.method == 'POST':
+        fecha = request.POST.get('fecha')
+        empresa = request.POST.get('empresa')
+
+        # Enviar solicitud al backend Flask
+        try:
+            response = requests.post('http://127.0.0.1:5000/resumen_fecha', json={'fecha': fecha, 'empresa': empresa})
+            response.raise_for_status()
+            data = response.json()
+        except requests.exceptions.RequestException as e:
+            return HttpResponse(f"Error al obtener el resumen: {str(e)}", status=400)
+
+    return render(request, 'resumen_fecha.html', {'data': data, 'fecha': fecha, 'empresa': empresa, 'empresas': empresas, 'fechas': fechas})
+
 
 # Vista para la página de Peticiones
 def peticiones(request):

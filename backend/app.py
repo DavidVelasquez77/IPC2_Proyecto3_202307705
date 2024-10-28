@@ -299,7 +299,96 @@ def procesar_mensaje_individual():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
     
+@app.route('/resumen_fecha', methods=['POST'])
+def resumen_fecha():
+    try:
+        # Obtener los parámetros de la solicitud
+        fecha = request.json.get('fecha')
+        empresa = request.json.get('empresa')
 
+        # Ruta del archivo XML
+        xml_path = 'C:\\Users\\Vela\\Desktop\\IPC2\\Proyecto3\\frontend\\output_xml\\salida.xml'
+
+        # Leer y parsear el archivo XML
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+
+        # Filtrar los mensajes por fecha y empresa
+        total_mensajes = 0
+        total_positivos = 0
+        total_negativos = 0
+        total_neutros = 0
+
+        for mensaje in root.findall('mensaje'):
+            mensaje_fecha = mensaje.find('fecha').text
+            mensaje_empresa = mensaje.find('empresa').text
+            clasificacion = mensaje.find('clasificacion').text
+
+            if mensaje_fecha == fecha and (empresa == 'todas' or mensaje_empresa == empresa):
+                total_mensajes += 1
+                if clasificacion == 'positivo':
+                    total_positivos += 1
+                elif clasificacion == 'negativo':
+                    total_negativos += 1
+                else:
+                    total_neutros += 1
+
+        # Devolver los datos filtrados en formato JSON
+        return jsonify({
+            'total_mensajes': total_mensajes,
+            'total_positivos': total_positivos,
+            'total_negativos': total_negativos,
+            'total_neutros': total_neutros
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/empresas', methods=['GET'])
+def get_empresas():
+    try:
+        # Ruta del archivo XML
+        xml_path = 'C:\\Users\\Vela\\Desktop\\IPC2\\Proyecto3\\frontend\\output_xml\\salida.xml'
+
+        # Leer y parsear el archivo XML
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+
+        # Obtener la lista de empresas
+        empresas = set()
+        for empresa in root.findall(".//empresa"):
+            nombre_empresa = empresa.get('nombre')
+            if nombre_empresa:
+                empresas.add(nombre_empresa)
+
+        # Devolver la lista de empresas en formato JSON
+        return jsonify({'empresas': list(empresas)}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/fechas', methods=['GET'])
+def get_fechas():
+    try:
+        # Ruta del archivo XML
+        xml_path = 'C:\\Users\\Vela\\Desktop\\IPC2\\Proyecto3\\frontend\\output_xml\\salida.xml'
+
+        # Leer y parsear el archivo XML
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+
+        # Obtener la lista de fechas
+        fechas = set()
+        for fecha in root.findall(".//fecha"):
+            fecha_text = fecha.text
+            if fecha_text:
+                fechas.add(fecha_text)
+
+        # Devolver la lista de fechas en formato JSON
+        return jsonify({'fechas': list(fechas)}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
