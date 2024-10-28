@@ -305,43 +305,65 @@ def resumen_fecha():
         # Obtener los parámetros de la solicitud
         fecha = request.json.get('fecha')
         empresa = request.json.get('empresa')
-
+        
+        print(f"Fecha recibida: {fecha}")
+        print(f"Empresa recibida: {empresa}")
+        
         # Ruta del archivo XML
         xml_path = 'C:\\Users\\Vela\\Desktop\\IPC2\\Proyecto3\\frontend\\output_xml\\salida.xml'
-
+        
+        # Verificar si el archivo existe
+        if not os.path.exists(xml_path):
+            print(f"Error: El archivo XML no existe en la ruta: {xml_path}")
+            return jsonify({'error': 'Archivo XML no encontrado'}), 404
+        
         # Leer y parsear el archivo XML
         tree = ET.parse(xml_path)
         root = tree.getroot()
-
-        # Filtrar los mensajes por fecha y empresa
-        total_mensajes = 0
-        total_positivos = 0
-        total_negativos = 0
-        total_neutros = 0
-
-        for mensaje in root.findall('mensaje'):
-            mensaje_fecha = mensaje.find('fecha').text
-            mensaje_empresa = mensaje.find('empresa').text
-            clasificacion = mensaje.find('clasificacion').text
-
-            if mensaje_fecha == fecha and (empresa == 'todas' or mensaje_empresa == empresa):
-                total_mensajes += 1
-                if clasificacion == 'positivo':
-                    total_positivos += 1
-                elif clasificacion == 'negativo':
-                    total_negativos += 1
-                else:
-                    total_neutros += 1
-
-        # Devolver los datos filtrados en formato JSON
-        return jsonify({
-            'total_mensajes': total_mensajes,
-            'total_positivos': total_positivos,
-            'total_negativos': total_negativos,
-            'total_neutros': total_neutros
-        }), 200
-
+        
+        # Buscar la respuesta para la fecha específica
+        respuesta = root.find(f".//respuesta[fecha='{fecha}']")
+        
+        if respuesta is None:
+            return jsonify({
+                'total_mensajes': 0,
+                'total_positivos': 0,
+                'total_negativos': 0,
+                'total_neutros': 0
+            }), 200
+        
+        if empresa == 'todas':
+            # Obtener totales generales de la fecha
+            mensajes = respuesta.find('mensajes')
+            return jsonify({
+                'total_mensajes': int(mensajes.find('total').text),
+                'total_positivos': int(mensajes.find('positivos').text),
+                'total_negativos': int(mensajes.find('negativos').text),
+                'total_neutros': int(mensajes.find('neutros').text)
+            }), 200
+        else:
+            # Buscar la empresa específica
+            empresa_element = respuesta.find(f".//empresa[@nombre='{empresa}']")
+            if empresa_element is not None:
+                mensajes = empresa_element.find('mensajes')
+                return jsonify({
+                    'total_mensajes': int(mensajes.find('total').text),
+                    'total_positivos': int(mensajes.find('positivos').text),
+                    'total_negativos': int(mensajes.find('negativos').text),
+                    'total_neutros': int(mensajes.find('neutros').text)
+                }), 200
+            else:
+                return jsonify({
+                    'total_mensajes': 0,
+                    'total_positivos': 0,
+                    'total_negativos': 0,
+                    'total_neutros': 0
+                }), 200
+                
     except Exception as e:
+        print(f"Error: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
 @app.route('/empresas', methods=['GET'])
@@ -354,14 +376,13 @@ def get_empresas():
         tree = ET.parse(xml_path)
         root = tree.getroot()
 
-        # Obtener la lista de empresas
+        # Obtener todas las empresas únicas
         empresas = set()
         for empresa in root.findall(".//empresa"):
-            nombre_empresa = empresa.get('nombre')
-            if nombre_empresa:
-                empresas.add(nombre_empresa)
+            nombre = empresa.get('nombre')
+            if nombre:
+                empresas.add(nombre)
 
-        # Devolver la lista de empresas en formato JSON
         return jsonify({'empresas': list(empresas)}), 200
 
     except Exception as e:
@@ -377,17 +398,71 @@ def get_fechas():
         tree = ET.parse(xml_path)
         root = tree.getroot()
 
-        # Obtener la lista de fechas
-        fechas = set()
+        # Obtener todas las fechas
+        fechas = []
         for fecha in root.findall(".//fecha"):
-            fecha_text = fecha.text
-            if fecha_text:
-                fechas.add(fecha_text)
+            if fecha.text:
+                fechas.append(fecha.text)
 
-        # Devolver la lista de fechas en formato JSON
-        return jsonify({'fechas': list(fechas)}), 200
+        return jsonify({'fechas': fechas}), 200
 
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/mensajes_filtrados', methods=['POST'])
+def mensajes_filtrados():
+    try:
+        # Obtener los parámetros de la solicitud
+        fecha = request.json.get('fecha')
+        empresa = request.json.get('empresa')
+        
+        # Ruta del archivo XML
+        xml_path = 'C:\\Users\\Vela\\Desktop\\IPC2\\Proyecto3\\frontend\\output_xml\\salida.xml'
+        
+        # Leer y parsear el archivo XML
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+        
+        # Buscar la respuesta para la fecha específica
+        respuesta = root.find(f".//respuesta[fecha='{fecha}']")
+        
+        if respuesta is None:
+            return jsonify({'mensajes': []}), 200
+            
+        mensajes_resumen = []
+        
+        if empresa == 'todas':
+            # Obtener todas las empresas para esa fecha
+            empresas = respuesta.findall(".//empresa")
+        else:
+            # Obtener solo la empresa específica
+            empresas = respuesta.findall(f".//empresa[@nombre='{empresa}']")
+            
+        for empresa_element in empresas:
+            nombre_empresa = empresa_element.get('nombre')
+            servicios = empresa_element.findall(".//servicio")
+            
+            for servicio in servicios:
+                nombre_servicio = servicio.get('nombre')
+                mensajes = servicio.find('mensajes')
+                
+                # Crear un resumen por cada servicio
+                mensaje_info = {
+                    'empresa': nombre_empresa,
+                    'servicio': nombre_servicio,
+                    'total': int(mensajes.find('total').text),
+                    'positivos': int(mensajes.find('positivos').text),
+                    'negativos': int(mensajes.find('negativos').text),
+                    'neutros': int(mensajes.find('neutros').text)
+                }
+                mensajes_resumen.append(mensaje_info)
+        
+        return jsonify({'mensajes': mensajes_resumen}), 200
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

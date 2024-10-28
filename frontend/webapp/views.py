@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import requests
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
@@ -9,6 +9,7 @@ import json
 import os
 from django.conf import settings
 from xml.dom import minidom
+from django.views.decorators.csrf import csrf_exempt
 
 # Variable global para almacenar los resultados de la última respuesta
 last_result = None
@@ -389,44 +390,82 @@ def reset_bd(request):
             return HttpResponse(f"Error al resetear la base de datos: {response.text}", status=response.status_code)
 
 
+# Django View (views.py)
 def resumen_fecha(request):
     empresas = []
     fechas = []
     data = None
     fecha = None
     empresa = None
-
-    # Obtener la lista de empresas
+    mensajes = []  # New variable for storing messages
+    
+    # Debugging
+    print("Vista resumen_fecha iniciada")
+    
+    # Get companies list
     try:
+        print("Obteniendo lista de empresas...")
         response = requests.get('http://127.0.0.1:5000/empresas')
         response.raise_for_status()
         empresas = response.json().get('empresas', [])
+        print(f"Empresas obtenidas: {empresas}")
     except requests.exceptions.RequestException as e:
+        print(f"Error al obtener empresas: {str(e)}")
         return HttpResponse(f"Error al obtener la lista de empresas: {str(e)}", status=400)
-
-    # Obtener la lista de fechas
+    
+    # Get dates list
     try:
+        print("Obteniendo lista de fechas...")
         response = requests.get('http://127.0.0.1:5000/fechas')
         response.raise_for_status()
         fechas = response.json().get('fechas', [])
+        print(f"Fechas obtenidas: {fechas}")
     except requests.exceptions.RequestException as e:
+        print(f"Error al obtener fechas: {str(e)}")
         return HttpResponse(f"Error al obtener la lista de fechas: {str(e)}", status=400)
-
+    
     if request.method == 'POST':
+        print("Procesando solicitud POST")
         fecha = request.POST.get('fecha')
         empresa = request.POST.get('empresa')
-
-        # Enviar solicitud al backend Flask
+        
+        print(f"Fecha seleccionada: {fecha}")
+        print(f"Empresa seleccionada: {empresa}")
+        
         try:
-            response = requests.post('http://127.0.0.1:5000/resumen_fecha', json={'fecha': fecha, 'empresa': empresa})
-            response.raise_for_status()
-            data = response.json()
+            # Get summary data
+            print("Enviando solicitud de resumen a Flask...")
+            response_summary = requests.post('http://127.0.0.1:5000/resumen_fecha',
+                                          json={'fecha': fecha, 'empresa': empresa})
+            print(f"Respuesta del servidor (resumen): {response_summary.text}")
+            response_summary.raise_for_status()
+            data = response_summary.json()
+            
+            # Get filtered messages
+            print("Enviando solicitud de mensajes a Flask...")
+            response_messages = requests.post('http://127.0.0.1:5000/mensajes_filtrados',
+                                           json={'fecha': fecha, 'empresa': empresa})
+            print(f"Respuesta del servidor (mensajes): {response_messages.text}")
+            response_messages.raise_for_status()
+            mensajes = response_messages.json().get('mensajes', [])
+            
+            print(f"Datos obtenidos: {data}")
+            print(f"Mensajes obtenidos: {mensajes}")
         except requests.exceptions.RequestException as e:
-            return HttpResponse(f"Error al obtener el resumen: {str(e)}", status=400)
-
-    return render(request, 'resumen_fecha.html', {'data': data, 'fecha': fecha, 'empresa': empresa, 'empresas': empresas, 'fechas': fechas})
-
-
+            print(f"Error al obtener datos: {str(e)}")
+            return HttpResponse(f"Error al obtener los datos: {str(e)}", status=400)
+    
+    context = {
+        'data': data,
+        'fecha': fecha,
+        'empresa': empresa,
+        'empresas': empresas,
+        'fechas': fechas,
+        'mensajes': mensajes  # Add messages to context
+    }
+    print(f"Contexto enviado al template: {context}")
+    return render(request, 'resumen_fecha.html', context)
+    
 # Vista para la página de Peticiones
 def peticiones(request):
     return render(request, 'peticiones.html', {'resultados': ''})  # Reiniciar entrada y resultados
