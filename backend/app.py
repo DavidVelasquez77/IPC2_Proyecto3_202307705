@@ -586,5 +586,32 @@ def mensajes_filtrados_rango():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+    
+@app.route('/reset', methods=['POST'])
+def reset():
+    try:
+        # Ruta del archivo XML
+        xml_path = 'C:\\Users\\Vela\\Desktop\\IPC2\\Proyecto3\\frontend\\output_xml\\salida.xml'
+        
+        # Verificar si el archivo existe
+        if not os.path.exists(xml_path):
+            return jsonify({'error': 'Archivo XML no encontrado'}), 404
+
+        # Crear la estructura XML vacía con el nodo raíz `<lista_respuestas>`
+        root = ET.Element("lista_respuestas")
+        tree = ET.ElementTree(root)
+        
+        # Escribir la estructura vacía en el archivo XML
+        with open(xml_path, "wb") as file:
+            tree.write(file, encoding='utf-8', xml_declaration=True)
+        
+        return jsonify({'message': 'Base de datos reseteada correctamente'}), 200
+
+    except Exception as e:
+        print(f"Error al resetear la base de datos: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)
