@@ -7,43 +7,185 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Orbitron', sans-serif;
+            background: #0a0a0f;
+            color: #e2e8f0;
+            position: relative;
+            overflow-x: hidden;
         }
-        .gradient-background {
-            background: linear-gradient(to right, #4f46e5, #3b82f6);
+
+        /* Fondo animado de estrellas */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: transparent;
+            animation: stars-move-in 1000ms 300ms forwards;
+            z-index: -1;
+        }
+
+        @keyframes stars-move-in {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: -10000px 5000px;
+            }
+        }
+
+        .stars:before, .stars:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: stars 100s linear infinite;
+            transform: rotate(45deg);
+        }
+
+        .stars:after {
+            background-image: 
+                radial-gradient(2px 2px at 50px 160px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 190px 50px, #fff, rgba(0,0,0,0));
+            animation: stars 50s linear infinite;
+        }
+
+        @keyframes stars {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-2000px);
+            }
+        }
+
+        .nav-gradient {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+        }
+
+        .card-gradient {
+            background: linear-gradient(to bottom right, rgba(13, 13, 18, 0.95), rgba(23, 23, 35, 0.95));
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            box-shadow: 
+                0 8px 32px 0 rgba(31, 38, 135, 0.37),
+                0 0 10px 0 rgba(124, 58, 237, 0.2);
+        }
+
+        .glow-effect {
+            box-shadow: 
+                0 0 15px rgba(124, 58, 237, 0.5),
+                0 0 30px rgba(99, 102, 241, 0.3);
+            transition: all 0.4s ease;
+        }
+
+        .glow-effect:hover {
+            box-shadow: 
+                0 0 25px rgba(124, 58, 237, 0.8),
+                0 0 50px rgba(99, 102, 241, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, #4f46e5, #7c3aed);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s ease;
+        }
+
+        .nav-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .animate-hover {
+            transition: all 0.4s ease;
+        }
+
+        .animate-hover:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+        }
+
+        textarea, pre {
+            background: rgba(17, 17, 27, 0.95) !important;
+            border: 1px solid rgba(124, 58, 237, 0.3) !important;
+            box-shadow: inset 0 0 20px rgba(124, 58, 237, 0.1);
+        }
+
+        textarea:focus {
+            border-color: rgba(124, 58, 237, 0.6) !important;
+            box-shadow: 
+                inset 0 0 20px rgba(124, 58, 237, 0.2),
+                0 0 15px rgba(124, 58, 237, 0.3);
         }
     </style>
 </head>
-<body class="min-h-screen bg-gray-50">
+<body class="min-h-screen">
+    <!-- Fondo de estrellas -->
+    <div class="stars"></div>
+
     <!-- Navbar -->
-    <nav class="gradient-background text-white shadow-lg">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <div class="font-bold text-xl tracking-tight">My App</div>
-                <div class="flex space-x-2">
-                    <a href="{% url 'clasificar' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Cargar Archivo</a>
-                    <a href="{% url 'peticiones' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Peticiones</a>
-                    <a href="{% url 'ayuda' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Ayuda</a>
+    <nav class="nav-gradient shadow-2xl sticky top-0 z-50">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-center py-6">
+                <div class="font-bold text-3xl tracking-wider text-white animate__animated animate__fadeIn">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400">My App</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="{% url 'clasificar' %}" class="nav-link px-6 py-3 rounded-lg text-lg hover:text-purple-300 transition-all duration-300">Cargar Archivo</a>
+                    <a href="{% url 'peticiones' %}" class="nav-link px-6 py-3 rounded-lg text-lg hover:text-purple-300 transition-all duration-300">Peticiones</a>
+                    <a href="{% url 'ayuda' %}" class="nav-link px-6 py-3 rounded-lg text-lg hover:text-purple-300 transition-all duration-300">Ayuda</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Peticiones</h1>
+    <div class="container mx-auto p-8">
+        <h1 class="text-5xl font-bold mb-12 text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 animate__animated animate__fadeInDown">Peticiones</h1>
 
         <!-- Consultar Datos -->
-        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Consultar Datos</h2>
+        <div class="card-gradient rounded-2xl p-8 mb-12 animate__animated animate__fadeInUp">
+            <h2 class="text-2xl font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-blue-300 to-purple-300">Consultar Datos</h2>
             <form action="{% url 'consultar_datos' %}" method="post">
                 {% csrf_token %}
                 <button type="submit" 
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">Consultar Última Respuesta
+                        class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-white px-8 py-4 rounded-lg glow-effect text-lg">
+                    Consultar Última Respuesta
                 </button>
             </form>
-            <textarea class="w-full h-96 p-4 border border-gray-200 rounded-md bg-gray-50 focus:outline-none mt-4" readonly>
+            <textarea class="w-full h-96 p-6 mt-8 text-gray-100 rounded-lg transition-all duration-300" readonly>
                 {% if resultados %}
                 {{ resultados|safe }}
                 {% else %}
@@ -52,119 +194,114 @@
             </textarea>
         </div>
 
-<!-- Prueba de Mensaje -->
-<div class="bg-white rounded-lg p-6 card-shadow mb-6">
-    <h2 class="text-xl font-semibold mb-4 text-gray-700">Prueba de Mensaje</h2>
-    
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="mb-4">
-            <label for="archivo_xml" class="block text-sm font-medium text-gray-700 mb-2">
-                Ingrese su mensaje en XML:
-            </label>
-            <textarea 
-                name="archivo_xml" 
-                id="archivo_xml" 
-                rows="10" 
-                class="w-full p-2 border border-gray-300 rounded-md font-mono"
-                placeholder="<?xml version=&quot;1.0&quot;?>
-    <mensaje>
-    Lugar y fecha: Guatemala, 01/04/2022 15:20
-    Usuario: ejemplo@usac.edu
-    Red social: Facebook
-    [Su mensaje aquí]
-    </mensaje>"
-                required></textarea>
+        <!-- Prueba de Mensaje -->
+        <div class="card-gradient rounded-2xl p-8 mb-12 animate__animated animate__fadeInUp">
+            <h2 class="text-2xl font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-blue-300 to-purple-300">Prueba de Mensaje</h2>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-8">
+                    <label class="block text-lg font-medium mb-3 text-gray-300">
+                        Ingrese su mensaje en XML:
+                    </label>
+                    <textarea 
+                        name="archivo_xml" 
+                        id="archivo_xml" 
+                        rows="10" 
+                        class="w-full p-6 text-gray-100 rounded-lg font-mono transition-all duration-300"
+                        placeholder="<?xml version=&quot;1.0&quot;?>
+<mensaje>
+Lugar y fecha: Guatemala, 01/04/2022 15:20
+Usuario: ejemplo@usac.edu
+Red social: Facebook
+[Su mensaje aquí]
+</mensaje>"
+                        required></textarea>
+                </div>
+                <button type="submit" class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-white px-8 py-4 rounded-lg glow-effect text-lg">
+                    Enviar
+                </button>
+            </form>
+
+            <div class="mt-8">
+                <a href="/prueba_mensaje" class="bg-gradient-to-r from-emerald-600 to-green-600 text-white px-8 py-4 rounded-lg inline-block glow-effect text-lg">
+                    Ir a Prueba de Mensaje
+                </a>
+            </div>
+
+            {% if mensaje_enviado %}
+                {% if respuesta_xml %}
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-4 text-emerald-400">Respuesta recibida:</h3>
+                        <pre class="p-6 rounded-lg overflow-x-auto whitespace-pre-wrap font-mono text-sm text-gray-300">{{ respuesta_xml|escape }}</pre>
+                    </div>
+                {% else %}
+                    <div class="mt-8">
+                        <p class="text-red-400">Se envió el mensaje pero no se recibió una respuesta válida.</p>
+                    </div>
+                {% endif %}
+            {% endif %}
         </div>
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
-            Enviar
-        </button>
-    </form>
-
-    <!-- Botón adicional para redirigir a /prueba_mensaje -->
-    <div class="mt-4">
-        <a href="/prueba_mensaje" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded inline-block">
-            Ir a Prueba de Mensaje
-        </a>
-    </div>
-
-    <!-- Sección de respuesta -->
-    {% if mensaje_enviado %}
-        {% if respuesta_xml %}
-            <div class="mt-6">
-                <h3 class="text-lg font-semibold mb-2 text-green-600">Respuesta recibida:</h3>
-                <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto whitespace-pre-wrap font-mono text-sm">{{ respuesta_xml|escape }}</pre>
-            </div>
-        {% else %}
-            <div class="mt-6">
-                <p class="text-red-500">Se envió el mensaje pero no se recibió una respuesta válida.</p>
-            </div>
-        {% endif %}
-    {% endif %}
-</div>
-
 
         <!-- Resumen de Clasificación por Fecha -->
-        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Resumen de Clasificación por Fecha</h2>
-                <a href="/resumen_fecha" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded inline-block">
-                    Ir a resumen_fecha
-                </a>
+        <div class="card-gradient rounded-2xl p-8 mb-12 animate__animated animate__fadeInUp">
+            <h2 class="text-2xl font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-blue-300 to-purple-300">Resumen de Clasificación por Fecha</h2>
+            <a href="/resumen_fecha" class="bg-gradient-to-r from-emerald-600 to-green-600 text-white px-8 py-4 rounded-lg inline-block glow-effect text-lg">
+                Ir a resumen_fecha
+            </a>
         </div>
 
         <!-- Resumen por Rango de Fechas -->
-        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Resumen por Rango de Fechas</h2>
-            <a href="/resumen_rango_fecha" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded inline-block">
+        <div class="card-gradient rounded-2xl p-8 mb-12 animate__animated animate__fadeInUp">
+            <h2 class="text-2xl font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-blue-300 to-purple-300">Resumen por Rango de Fechas</h2>
+            <a href="/resumen_rango_fecha" class="bg-gradient-to-r from-emerald-600 to-green-600 text-white px-8 py-4 rounded-lg inline-block glow-effect text-lg">
                 Ir a resumen_rango_fecha
             </a>
         </div>
 
-        <!-- Botón para generar el reporte en PDF -->
-        <div class="flex justify-center mb-6">
-            <a href="{% url 'generar_reporte_pdf' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md">Generar Reporte en PDF</a>
+        <!-- Botón PDF -->
+        <div class="flex justify-center mb-12 animate__animated animate__fadeInUp">
+            <a href="{% url 'generar_reporte_pdf' %}" class="bg-gradient-to-r from-amber-600 to-yellow-600 text-white px-10 py-5 rounded-lg glow-effect text-lg">
+                Generar Reporte en PDF
+            </a>
         </div>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Crear PDF al cargar la página
-                const generatePDF = () => {
-                    const element = document.body; // Selecciona el cuerpo de la página
-                    const options = {
-                        filename: `resumen_${new Date().toISOString().slice(0, 10)}.pdf`,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2 },
-                        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                    };
-        
-                    html2pdf()
-                        .from(element)
-                        .set(options)
-                        .toPdf()
-                        .get('pdf')
-                        .then(pdf => {
-                            // Enviar PDF al servidor
-                            const formData = new FormData();
-                            formData.append('pdf', pdf.output('blob'), options.filename);
-        
-                            fetch('/guardar_pdf/', {
-                                method: 'POST',
-                                body: formData
-                            }).then(response => {
-                                if (response.ok) {
-                                    console.log('PDF generado y guardado en el servidor.');
-                                } else {
-                                    console.error('Error al guardar el PDF en el servidor.');
-                                }
-                            });
-                        });
-                };
-        
-                // Llama a la función para generar el PDF al cargar la página
-                generatePDF();
-            });
-        </script>
-        
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generatePDF = () => {
+                const element = document.body;
+                const options = {
+                    filename: `resumen_${new Date().toISOString().slice(0, 10)}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+
+                html2pdf()
+                    .from(element)
+                    .set(options)
+                    .toPdf()
+                    .get('pdf')
+                    .then(pdf => {
+                        const formData = new FormData();
+                        formData.append('pdf', pdf.output('blob'), options.filename);
+
+                        fetch('/guardar_pdf/', {
+                            method: 'POST',
+                            body: formData
+                        }).then(response => {
+                            if (response.ok) {
+                                console.log('PDF generado y guardado en el servidor.');
+                            } else {
+                                console.error('Error al guardar el PDF en el servidor.');
+                            }
+                        });
+                    });
+            };
+
+            generatePDF();
+        });
+    </script>
 </body>
 </html>

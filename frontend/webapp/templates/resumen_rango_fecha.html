@@ -1,137 +1,308 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <title>Resumen de Clasificación por Fecha</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
     <style>
-        .mensajes-container {
-            margin-top: 20px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+        
+        .gradient-background {
+            background: linear-gradient(45deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
         }
-        .mensaje {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        
+        .cyber-border {
+            border: 1px solid rgba(147, 51, 234, 0.5);
+            box-shadow: 0 0 15px rgba(147, 51, 234, 0.3);
         }
-        .mensaje.positivo {
-            border-left: 5px solid rgb(75, 192, 192);
+        
+        .cyber-glow {
+            text-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
         }
-        .mensaje.negativo {
-            border-left: 5px solid rgb(255, 99, 132);
+        
+        body {
+            background-color: #0f172a;
+            font-family: 'Inter', sans-serif;
         }
-        .mensaje.neutro {
-            border-left: 5px solid rgb(201, 203, 207);
+        
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
         }
-        .mensaje p {
-            margin: 5px 0;
-        }
-        .mensaje strong {
-            color: #555;
-        }
+        
         select, button {
-            padding: 8px;
-            margin: 5px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            transition: all 0.3s ease;
         }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
+        
+        select:hover, button:hover {
+            border-color: rgba(147, 51, 234, 0.8);
+            box-shadow: 0 0 10px rgba(147, 51, 234, 0.3);
         }
-        button:hover {
-            background-color: #45a049;
+        
+        .mensaje {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
         }
-        .summary {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
+        
+        .mensaje:hover {
+            transform: translateY(-2px);
         }
-        canvas {
-            max-width: 600px;
-            margin: 20px auto;
+        
+        .mensaje.positivo {
+            border-left: 5px solid #4ade80;
         }
+        
+        .mensaje.negativo {
+            border-left: 5px solid #f87171;
+        }
+        
+        .mensaje.neutro {
+            border-left: 5px solid #94a3b8;
+        }
+        body {
+            background: #080810;
+            color: #e2e8f0;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+    
+        /* Estrellas mejoradas */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+    
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #fff, 0 0 20px #fff;
+            animation: starfall linear infinite;
+        }
+    
+        .star.small {
+            width: 1px;
+            height: 1px;
+        }
+    
+        .star.medium {
+            width: 2px;
+            height: 2px;
+        }
+    
+        .star.large {
+            width: 3px;
+            height: 3px;
+        }
+    
+        .star.extra-large {
+            width: 4px;
+            height: 4px;
+        }
+    
+        @keyframes starfall {
+            0% {
+                transform: translateY(-100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) translateX(-200px);
+                opacity: 0;
+            }
+        }
+    
+        /* Generación dinámica de más estrellas con diferentes propiedades */
+        .star:nth-child(1) { left: 5%; animation-duration: 3s; }
+        .star:nth-child(2) { left: 10%; animation-duration: 4s; animation-delay: 1s; }
+        .star:nth-child(3) { left: 15%; animation-duration: 5s; animation-delay: 0.5s; }
+        .star:nth-child(4) { left: 20%; animation-duration: 4.5s; animation-delay: 0.2s; }
+        .star:nth-child(5) { left: 25%; animation-duration: 3.5s; animation-delay: 0.7s; }
+        .star:nth-child(6) { left: 30%; animation-duration: 4.2s; animation-delay: 0.3s; }
+        .star:nth-child(7) { left: 35%; animation-duration: 3.8s; animation-delay: 0.9s; }
+        .star:nth-child(8) { left: 40%; animation-duration: 4.7s; animation-delay: 0.4s; }
+        .star:nth-child(9) { left: 45%; animation-duration: 3.3s; animation-delay: 0.6s; }
+        .star:nth-child(10) { left: 50%; animation-duration: 4.4s; animation-delay: 0.8s; }
+        .star:nth-child(11) { left: 55%; animation-duration: 3.7s; animation-delay: 0.2s; }
+        .star:nth-child(12) { left: 60%; animation-duration: 4.9s; animation-delay: 0.5s; }
+        .star:nth-child(13) { left: 65%; animation-duration: 3.4s; animation-delay: 0.7s; }
+        .star:nth-child(14) { left: 70%; animation-duration: 4.3s; animation-delay: 0.3s; }
+        .star:nth-child(15) { left: 75%; animation-duration: 3.9s; animation-delay: 0.9s; }
+        .star:nth-child(16) { left: 80%; animation-duration: 4.6s; animation-delay: 0.4s; }
+        .star:nth-child(17) { left: 85%; animation-duration: 3.2s; animation-delay: 0.6s; }
+        .star:nth-child(18) { left: 90%; animation-duration: 4.8s; animation-delay: 0.8s; }
+        .star:nth-child(19) { left: 95%; animation-duration: 3.6s; animation-delay: 0.3s; }
+        .star:nth-child(20) { left: 98%; animation-duration: 4.1s; animation-delay: 0.5s; }
+    
     </style>
 </head>
-<body>
-        <!-- Navbar -->
-    <nav class="gradient-background text-white shadow-lg">
+<body >
+        <!-- Fondo de estrellas -->
+    <div class="stars">
+        <!-- Estrellas pequeñas -->
+        <div class="star small"></div>
+        <div class="star small"></div>
+        <div class="star small"></div>
+        <div class="star small"></div>
+        <div class="star small"></div>
+        <!-- Estrellas medianas -->
+        <div class="star medium"></div>
+        <div class="star medium"></div>
+        <div class="star medium"></div>
+        <div class="star medium"></div>
+        <div class="star medium"></div>
+        <!-- Estrellas grandes -->
+        <div class="star large"></div>
+        <div class="star large"></div>
+        <div class="star large"></div>
+        <div class="star large"></div>
+        <div class="star large"></div>
+        <!-- Estrellas extra grandes -->
+        <div class="star extra-large"></div>
+        <div class="star extra-large"></div>
+        <div class="star extra-large"></div>
+        <div class="star extra-large"></div>
+        <div class="star extra-large"></div>
+    </div>
+    <!-- Navbar -->
+    <nav class="gradient-background shadow-lg border-b border-purple-500/30">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center py-4">
-                <div class="font-bold text-xl tracking-tight">My App</div>
-                <div class="flex space-x-2">
-                    <a href="{% url 'clasificar' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Cargar Archivo</a>
-                    <a href="{% url 'peticiones' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Peticiones</a>
-                    <a href="{% url 'ayuda' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Ayuda</a>
+                <div class="orbitron font-bold text-xl tracking-wider text-purple-400 cyber-glow">Dashboard Analytics</div>
+                <div class="flex space-x-4">
+                    <a href="{% url 'clasificar' %}" class="px-4 py-2 rounded-lg hover:bg-purple-500/20 transition duration-300 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                        <span>Cargar Archivo</span>
+                    </a>
+                    <a href="{% url 'peticiones' %}" class="px-4 py-2 rounded-lg hover:bg-purple-500/20 transition duration-300 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span>Peticiones</span>
+                    </a>
+                    <a href="{% url 'ayuda' %}" class="px-4 py-2 rounded-lg hover:bg-purple-500/20 transition duration-300 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Ayuda</span>
+                    </a>
                 </div>
             </div>
         </div>
     </nav>
-    <h1>Resumen de Clasificación por Fecha</h1>
-    
-    <form method="post" action="{% url 'resumen_rango_fecha' %}">
-        {% csrf_token %}
-        <label for="fecha_inicio">Fecha Inicio:</label>
-        <select id="fecha_inicio" name="fecha_inicio" required>
-            {% for fecha in fechas %}
-                <option value="{{ fecha }}" {% if fecha == fecha_inicio %}selected{% endif %}>{{ fecha }}</option>
-            {% endfor %}
-        </select>
-    
-        <label for="fecha_fin">Fecha Fin:</label>
-        <select id="fecha_fin" name="fecha_fin" required>
-            {% for fecha in fechas %}
-                <option value="{{ fecha }}" {% if fecha == fecha_fin %}selected{% endif %}>{{ fecha }}</option>
-            {% endfor %}
-        </select>
-    
-        <label for="empresa">Empresa:</label>
-        <select id="empresa" name="empresa" required>
-            <option value="todas">Todas</option>
-            {% for emp in empresas %}
-                <option value="{{ emp }}" {% if emp == empresa %}selected{% endif %}>{{ emp }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Filtrar</button>
-    </form>
 
-    {% if data %}
-        <div class="summary">
-            <h2>Resultados para {{ fecha }} - {{ empresa }}</h2>
-            <p>Total de Mensajes: {{ data.total_mensajes }}</p>
-            <p>Total de Mensajes Positivos: {{ data.total_positivos }}</p>
-            <p>Total de Mensajes Negativos: {{ data.total_negativos }}</p>
-            <p>Total de Mensajes Neutros: {{ data.total_neutros }}</p>
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8 text-center orbitron text-purple-400 cyber-glow">Resumen de Clasificación por Fecha</h1>
+        
+        <form method="post" action="{% url 'resumen_rango_fecha' %}" class="cyber-border rounded-xl p-6 mb-8 bg-slate-800/50 backdrop-blur-sm">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="flex flex-col">
+                    <label for="fecha_inicio" class="mb-2 text-sm font-medium text-gray-300">Fecha Inicio:</label>
+                    <select id="fecha_inicio" name="fecha_inicio" required class="bg-slate-800 text-gray-300 rounded-lg p-2.5 focus:ring-purple-500 focus:border-purple-500">
+                        {% for fecha in fechas %}
+                            <option value="{{ fecha }}" {% if fecha == fecha_inicio %}selected{% endif %}>{{ fecha }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex flex-col">
+                    <label for="fecha_fin" class="mb-2 text-sm font-medium text-gray-300">Fecha Fin:</label>
+                    <select id="fecha_fin" name="fecha_fin" required class="bg-slate-800 text-gray-300 rounded-lg p-2.5 focus:ring-purple-500 focus:border-purple-500">
+                        {% for fecha in fechas %}
+                            <option value="{{ fecha }}" {% if fecha == fecha_fin %}selected{% endif %}>{{ fecha }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex flex-col">
+                    <label for="empresa" class="mb-2 text-sm font-medium text-gray-300">Empresa:</label>
+                    <select id="empresa" name="empresa" required class="bg-slate-800 text-gray-300 rounded-lg p-2.5 focus:ring-purple-500 focus:border-purple-500">
+                        <option value="todas">Todas</option>
+                        {% for emp in empresas %}
+                            <option value="{{ emp }}" {% if emp == empresa %}selected{% endif %}>{{ emp }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="mt-6 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-lg hover:shadow-purple-500/50">
+                Filtrar Resultados
+            </button>
+        </form>
+
+        {% if data %}
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="cyber-border rounded-xl p-6 bg-slate-800/50 backdrop-blur-sm">
+                <h3 class="text-lg font-semibold mb-2 text-purple-400">Total Mensajes</h3>
+                <p class="text-3xl font-bold text-white">{{ data.total_mensajes }}</p>
+            </div>
+            <div class="cyber-border rounded-xl p-6 bg-slate-800/50 backdrop-blur-sm">
+                <h3 class="text-lg font-semibold mb-2 text-green-400">Mensajes Positivos</h3>
+                <p class="text-3xl font-bold text-white">{{ data.total_positivos }}</p>
+            </div>
+            <div class="cyber-border rounded-xl p-6 bg-slate-800/50 backdrop-blur-sm">
+                <h3 class="text-lg font-semibold mb-2 text-red-400">Mensajes Negativos</h3>
+                <p class="text-3xl font-bold text-white">{{ data.total_negativos }}</p>
+            </div>
+            <div class="cyber-border rounded-xl p-6 bg-slate-800/50 backdrop-blur-sm">
+                <h3 class="text-lg font-semibold mb-2 text-gray-400">Mensajes Neutros</h3>
+                <p class="text-3xl font-bold text-white">{{ data.total_neutros }}</p>
+            </div>
         </div>
 
-        <canvas id="resultChart"></canvas>
+        <div class="cyber-border rounded-xl p-6 bg-slate-800/50 backdrop-blur-sm mb-8">
+            <canvas id="resultChart"></canvas>
+        </div>
         
         {% if mensajes %}
-        <div class="mensajes-container">
-            <h3>Servicios por Empresa</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for mensaje in mensajes %}
-                <div class="mensaje">
-                    <h4>{{ mensaje.empresa }} - {{ mensaje.servicio }}</h4>
-                    <p><strong>Total Mensajes:</strong> {{ mensaje.total }}</p>
-                    <p><strong>Mensajes Positivos:</strong> {{ mensaje.positivos }}</p>
-                    <p><strong>Mensajes Negativos:</strong> {{ mensaje.negativos }}</p>
-                    <p><strong>Mensajes Neutros:</strong> {{ mensaje.neutros }}</p>
+            <div class="cyber-border rounded-xl p-6 bg-slate-800/50 backdrop-blur-sm">
+                <h4 class="text-xl font-bold mb-4 text-purple-400">{{ mensaje.empresa }} - {{ mensaje.servicio }}</h4>
+                <div class="space-y-3">
+                    <p class="flex justify-between">
+                        <span class="text-gray-400">Total Mensajes:</span>
+                        <span class="font-bold">{{ mensaje.total }}</span>
+                    </p>
+                    <p class="flex justify-between">
+                        <span class="text-green-400">Mensajes Positivos:</span>
+                        <span class="font-bold">{{ mensaje.positivos }}</span>
+                    </p>
+                    <p class="flex justify-between">
+                        <span class="text-red-400">Mensajes Negativos:</span>
+                        <span class="font-bold">{{ mensaje.negativos }}</span>
+                    </p>
+                    <p class="flex justify-between">
+                        <span class="text-gray-400">Mensajes Neutros:</span>
+                        <span class="font-bold">{{ mensaje.neutros }}</span>
+                    </p>
                 </div>
+            </div>
             {% endfor %}
         </div>
-    {% else %}
-        <p>No se encontraron mensajes para los criterios seleccionados.</p>
-    {% endif %}
+        {% else %}
+        <div class="text-center py-12">
+            <p class="text-gray-400 text-lg">No se encontraron mensajes para los criterios seleccionados.</p>
+        </div>
+        {% endif %}     
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

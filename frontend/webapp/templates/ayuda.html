@@ -5,64 +5,392 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ayuda</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
         }
-        .gradient-background {
-            background: linear-gradient(to right, #4f46e5, #3b82f6);
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 15px rgba(147, 51, 234, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(147, 51, 234, 0.8); }
+            100% { box-shadow: 0 0 15px rgba(147, 51, 234, 0.5); }
+        }
+
+        @keyframes shooting-star {
+            0% {
+                transform: translateX(0) translateY(0) rotate(-45deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-500px) translateY(500px) rotate(-45deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes star-rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes parallax-1 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @keyframes parallax-2 {
+            0% { transform: translateX(0) translateY(0); }
+            100% { transform: translateX(-30%) translateY(-10%); }
+        }
+
+        @keyframes parallax-3 {
+            0% { transform: translateX(0) translateY(0); }
+            100% { transform: translateX(-20%) translateY(5%); }
+        }
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #0a0a0a;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            z-index: -1;
+        }
+
+        /* Primera capa de estrellas - más rápida */
+        .starfield-1 {
+            background-image: 
+                radial-gradient(1px 1px at 25% 25%, white 50%, transparent 50%),
+                radial-gradient(1px 1px at 50% 50%, white 50%, transparent 50%),
+                radial-gradient(1px 1px at 75% 75%, white 50%, transparent 50%),
+                radial-gradient(2px 2px at 15% 85%, white 50%, transparent 50%),
+                radial-gradient(2px 2px at 85% 15%, white 50%, transparent 50%);
+            background-size: 200px 200px;
+            animation: parallax-1 20s linear infinite;
+        }
+
+        /* Segunda capa de estrellas - velocidad media */
+        .starfield-2 {
+            background-image: 
+                radial-gradient(1px 1px at 10% 10%, rgba(255, 255, 255, 0.8) 50%, transparent 50%),
+                radial-gradient(2px 2px at 30% 30%, rgba(255, 255, 255, 0.8) 50%, transparent 50%),
+                radial-gradient(2px 2px at 60% 60%, rgba(255, 255, 255, 0.8) 50%, transparent 50%),
+                radial-gradient(1px 1px at 20% 80%, rgba(255, 255, 255, 0.8) 50%, transparent 50%),
+                radial-gradient(1px 1px at 80% 20%, rgba(255, 255, 255, 0.8) 50%, transparent 50%);
+            background-size: 300px 300px;
+            animation: parallax-2 30s linear infinite;
+        }
+
+        /* Tercera capa de estrellas - más lenta */
+        .starfield-3 {
+            background-image: 
+                radial-gradient(2px 2px at 5% 5%, rgba(255, 255, 255, 0.6) 50%, transparent 50%),
+                radial-gradient(2px 2px at 35% 35%, rgba(255, 255, 255, 0.6) 50%, transparent 50%),
+                radial-gradient(2px 2px at 65% 65%, rgba(255, 255, 255, 0.6) 50%, transparent 50%),
+                radial-gradient(2px 2px at 95% 95%, rgba(255, 255, 255, 0.6) 50%, transparent 50%);
+            background-size: 400px 400px;
+            animation: parallax-3 40s linear infinite;
+        }
+
+        /* Estrellas fugaces */
+        .shooting-stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .shooting-stars::before,
+        .shooting-stars::after {
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(to right, white, transparent);
+            border-radius: 50%;
+        }
+
+        .shooting-stars::before {
+            top: 20%;
+            right: 20%;
+            animation: shooting-star 4s linear infinite;
+        }
+
+        .shooting-stars::after {
+            top: 70%;
+            right: 40%;
+            animation: shooting-star 6s linear infinite;
+            animation-delay: 2s;
+        }
+
+        /* Efecto de nebulosa */
+        .nebula {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 30% 50%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+            filter: blur(30px);
+            z-index: -1;
+            animation: star-rotation 100s linear infinite;
+        }
+
+        .cyber-card {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            animation: pulse 3s infinite;
+            transition: all 0.3s ease;
+        }
+
+        .cyber-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px rgba(147, 51, 234, 0.8);
+        }
+
+        .gradient-text {
+            background: linear-gradient(45deg, #4f46e5, #7c3aed, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        .icon-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .hover-glow:hover {
+            text-shadow: 0 0 8px rgba(147, 51, 234, 0.8);
+        }
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes glowButton {
+            0% {
+                box-shadow: 0 0 5px rgba(147, 51, 234, 0.5),
+                           0 0 10px rgba(147, 51, 234, 0.5),
+                           0 0 15px rgba(147, 51, 234, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 10px rgba(147, 51, 234, 0.8),
+                           0 0 20px rgba(147, 51, 234, 0.8),
+                           0 0 30px rgba(147, 51, 234, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(147, 51, 234, 0.5),
+                           0 0 10px rgba(147, 51, 234, 0.5),
+                           0 0 15px rgba(147, 51, 234, 0.5);
+            }
+        }
+
+        @keyframes borderGlow {
+            0% {
+                border-color: rgba(147, 51, 234, 0.5);
+            }
+            50% {
+                border-color: rgba(147, 51, 234, 1);
+            }
+            100% {
+                border-color: rgba(147, 51, 234, 0.5);
+            }
+        }
+
+        /* Enhanced Navbar Styles */
+        .cyber-navbar {
+            background: linear-gradient(
+                45deg, 
+                rgba(17, 24, 39, 0.95),
+                rgba(88, 28, 135, 0.95),
+                rgba(67, 56, 202, 0.95),
+                rgba(17, 24, 39, 0.95)
+            );
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            border-bottom: 2px solid rgba(147, 51, 234, 0.5);
+            animation: borderGlow 3s infinite;
+        }
+
+        /* Enhanced Button Styles */
+        .cyber-button {
+            background: linear-gradient(
+                45deg,
+                rgba(88, 28, 135, 0.8),
+                rgba(67, 56, 202, 0.8)
+            );
+            border: 1px solid rgba(147, 51, 234, 0.5);
+            position: relative;
+            overflow: hidden;
+            animation: glowButton 3s infinite;
+            transition: all 0.3s ease;
+        }
+
+        .cyber-button:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) rotate(45deg);
+            }
+        }
+
+        .cyber-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 0 20px rgba(147, 51, 234, 1);
         }
     </style>
 </head>
-<body class="min-h-screen bg-gray-50">
-    <!-- Navbar -->
-    <nav class="gradient-background text-white shadow-lg">
+<body class="min-h-screen text-gray-100">
+    <!-- Starfield and nebula backgrounds remain the same -->
+    <div class="starfield starfield-1"></div>
+    <div class="starfield starfield-2"></div>
+    <div class="starfield starfield-3"></div>
+    <div class="shooting-stars"></div>
+    <div class="nebula"></div>
+
+    <!-- Enhanced Navbar -->
+    <nav class="cyber-navbar sticky top-0 z-50 backdrop-filter backdrop-blur-lg">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center py-4">
-                <div class="font-bold text-xl tracking-tight">My App</div>
-                <div class="flex space-x-2">
-                    <a href="{% url 'clasificar' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Cargar Archivo</a>
-                    <a href="{% url 'peticiones' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Peticiones</a>
-                    <a href="{% url 'ayuda' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Ayuda</a>
+                <div class="font-bold text-2xl tracking-wider gradient-text flex items-center animate__animated animate__pulse animate__infinite">
+                    <i class="fas fa-robot mr-2 icon-pulse"></i>My App
+                </div>
+                <div class="flex space-x-6">
+                    <a href="{% url 'clasificar' %}" class="cyber-button px-6 py-3 rounded-lg flex items-center">
+                        <i class="fas fa-upload mr-2"></i>Cargar Archivo
+                    </a>
+                    <a href="{% url 'peticiones' %}" class="cyber-button px-6 py-3 rounded-lg flex items-center">
+                        <i class="fas fa-list-alt mr-2"></i>Peticiones
+                    </a>
+                    <a href="{% url 'ayuda' %}" class="cyber-button px-6 py-3 rounded-lg flex items-center">
+                        <i class="fas fa-question-circle mr-2"></i>Ayuda
+                    </a>
                 </div>
             </div>
         </div>
     </nav>
 
     <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Ayuda</h1>
+        <h1 class="text-5xl font-bold mb-12 text-center gradient-text flex justify-center items-center">
+            <i class="fas fa-info-circle mr-4 icon-pulse"></i>Centro de Ayuda
+        </h1>
 
-        <!-- Tarjeta para Información del Estudiante -->
-        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Información del Estudiante</h2>
-            <p>Aquí puedes incluir información relevante sobre el estudiante, como:</p>
-            <ul class="list-disc ml-8 mt-2">
-                <li>Nombre: Josué David Velásquez Ixchop</li>
-                <li>Carnet: 202307705</li>
-                <li>Carrera: Ingeniería en Sistemas</li>
-                <li>Curso: Introducción a la Programación de Computadoras</li>
-                <li>Sección: A</li>
-            </ul>
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Tarjeta para Información del Estudiante -->
+            <div class="cyber-card rounded-xl p-8">
+                <h2 class="text-2xl font-semibold mb-6 gradient-text flex items-center">
+                    <i class="fas fa-user-graduate mr-3 text-purple-400"></i>Información del Estudiante
+                </h2>
+                <div class="space-y-4 text-gray-300">
+                    <p class="flex items-center transform transition hover:translate-x-2 hover-glow">
+                        <i class="fas fa-id-card mr-3 text-blue-400"></i>Nombre: Josué David Velásquez Ixchop
+                    </p>
+                    <p class="flex items-center transform transition hover:translate-x-2 hover-glow">
+                        <i class="fas fa-hashtag mr-3 text-purple-400"></i>Carnet: 202307705
+                    </p>
+                    <p class="flex items-center transform transition hover:translate-x-2 hover-glow">
+                        <i class="fas fa-laptop-code mr-3 text-blue-400"></i>Carrera: Ingeniería en Sistemas
+                    </p>
+                    <p class="flex items-center transform transition hover:translate-x-2 hover-glow">
+                        <i class="fas fa-book mr-3 text-purple-400"></i>Curso: Introducción a la Programación de Computadoras
+                    </p>
+                    <p class="flex items-center transform transition hover:translate-x-2 hover-glow">
+                        <i class="fas fa-chalkboard mr-3 text-blue-400"></i>Sección: A
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tarjeta para Documentación del Programa -->
+            <div class="cyber-card rounded-xl p-8">
+                <h2 class="text-2xl font-semibold mb-6 gradient-text flex items-center">
+                    <i class="fas fa-file-code mr-3 text-purple-400"></i>Documentación del Programa
+                </h2>
+                <div class="space-y-4 text-gray-300">
+                    <p class="mb-4">Para acceder a la documentación completa, visita:</p>
+                    <a href="https://github.com/DavidVelasquez77/IPC2_Proyecto3_202307705.git" 
+                       class="inline-flex items-center px-6 py-3 bg-purple-900 rounded-lg hover:bg-purple-800 transition-all duration-300 transform hover:scale-105">
+                        <i class="fab fa-github mr-2"></i>Repositorio GitHub
+                    </a>
+                    <ul class="list-none space-y-3 mt-6">
+                        <li class="flex items-center transform transition hover:translate-x-2 hover-glow">
+                            <i class="fas fa-check-circle mr-3 text-purple-400"></i>Descripción general del programa
+                        </li>
+                        <li class="flex items-center transform transition hover:translate-x-2 hover-glow">
+                            <i class="fas fa-check-circle mr-3 text-blue-400"></i>Requisitos del sistema
+                        </li>
+                        <li class="flex items-center transform transition hover:translate-x-2 hover-glow">
+                            <i class="fas fa-check-circle mr-3 text-purple-400"></i>Instrucciones de instalación
+                        </li>
+                        <li class="flex items-center transform transition hover:translate-x-2 hover-glow">
+                            <i class="fas fa-check-circle mr-3 text-blue-400"></i>Guía de usuario
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-
-        <!-- Tarjeta para Documentación del Programa -->
-        <div class="bg-white rounded-lg p-6 card-shadow mb-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Documentación del Programa</h2>
-            <p>Aquí puedes incluir la documentación relevante del programa:</p>
-            <ul class="list-disc ml-8 mt-2">
-                <li>Descripción general del programa</li>
-                <li>Requisitos del sistema</li>
-                <li>Instrucciones de instalación</li>
-                <li>Guía de usuario</li>
-            </ul>
-        </div>
-
-        <p>Otras guías de uso:</p>
-        <ul class="list-disc ml-8">
-            <li>Guía de uso 1</li>
-            <li>Guía de uso 2</li>
-            <li>Guía de uso 3</li>
-        </ul>
     </div>
 </body>
 </html>

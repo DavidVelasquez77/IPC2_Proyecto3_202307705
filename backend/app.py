@@ -688,7 +688,7 @@ def update_last_result():
     else:
         return jsonify({"error": "last_result no enviado en el payload"}), 400
 
-# Endpoint para consultar el valor de last_result (el que hicimos antes)
+# Endpoint para consultar el valor de last_result  
 @app.route('/last-result', methods=['GET'])
 def get_last_result():
     return jsonify(last_result)

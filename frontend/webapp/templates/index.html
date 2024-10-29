@@ -5,69 +5,311 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clasificación de Mensajes</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+        
+        /* Base Styles */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        .gradient-background {
-            background: linear-gradient(to right, #4f46e5, #3b82f6);
+        
+        .futuristic-title {
+            font-family: 'Orbitron', sans-serif;
         }
-        .card-shadow {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+        /* Animated Stars Background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: transparent;
+        }
+
+        .stars::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: stars-animation 8s linear infinite;
+            transform: rotate(45deg);
+            opacity: 0.4;
+        }
+
+        @keyframes stars-animation {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Scanner Effect */
+        .scanner-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scanner-effect::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(
+                to right,
+                transparent,
+                rgba(59, 130, 246, 0.5),
+                rgba(139, 92, 246, 0.5),
+                transparent
+            );
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+            100% {
+                top: 100%;
+            }
+        }
+
+        /* Matrix Effect */
+        .matrix-bg {
+            background: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)),
+                        repeating-linear-gradient(
+                            0deg,
+                            transparent 0%,
+                            rgba(0, 255, 0, 0.1) 50%,
+                            transparent 100%
+                        );
+            background-size: 100% 100%, 100% 4px;
+            animation: matrix 20s linear infinite;
+        }
+
+        @keyframes matrix {
+            0% {
+                background-position: 0 0, 0 0;
+            }
+            100% {
+                background-position: 0 0, 0 100%;
+            }
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+            animation: glitch 1s linear infinite;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            text-shadow: 1px 0 blue;
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 red;
+            animation-duration: 4s;
+        }
+
+        @keyframes glitch {
+            2%, 64% {
+                transform: translate(2px,0) skew(0deg);
+            }
+            4%, 60% {
+                transform: translate(-2px,0) skew(0deg);
+            }
+            62% {
+                transform: translate(0,0) skew(5deg); 
+            }
+        }
+
+        /* Neon Borders */
+        .neon-border {
+            position: relative;
+            border: 1px solid transparent;
+            border-radius: 1rem;
+            background: linear-gradient(#000, #000) padding-box,
+                        linear-gradient(45deg, #3b82f6, #8b5cf6, #6366f1) border-box;
+            animation: borderRotate 4s linear infinite;
+        }
+
+        @keyframes borderRotate {
+            from {
+                background: linear-gradient(#000, #000) padding-box,
+                            linear-gradient(0deg, #3b82f6, #8b5cf6, #6366f1) border-box;
+            }
+            to {
+                background: linear-gradient(#000, #000) padding-box,
+                            linear-gradient(360deg, #3b82f6, #8b5cf6, #6366f1) border-box;
+            }
+        }
+
+        /* Glass Effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        /* Cyber Button */
+        .cyber-button {
+            position: relative;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #6366f1);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            100% {
+                left: 200%;
+            }
+        }
+
+        /* Hover Effects */
+        .hover-glow:hover {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5),
+                        0 0 30px rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .hover-scan:hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            background: rgba(59, 130, 246, 0.5);
+            filter: blur(3px);
+            animation: scanVertical 1s linear infinite;
+        }
+
+        @keyframes scanVertical {
+            0% {
+                left: 0;
+            }
+            100% {
+                left: 100%;
+            }
         }
     </style>
 </head>
-<body class="min-h-screen bg-gray-50">
+<body class="text-gray-100">
+    <!-- Stars Background -->
+    <div class="stars"></div>
+
     <!-- Navbar -->
-    <nav class="gradient-background text-white shadow-lg">
+    <nav class="glass shadow-lg z-50 sticky top-0">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center py-4">
-                <div class="font-bold text-xl tracking-tight">My App</div>
-                <div class="flex space-x-2">
-                    <a href="{% url 'clasificar' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Cargar Archivo</a>
-                    <a href="{% url 'peticiones' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Peticiones</a>
-                    <a href="{% url 'ayuda' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Ayuda</a>
+                <div class="futuristic-title text-2xl font-bold tracking-wider flex items-center gap-2 glitch" >
+                    <i class="fas fa-microchip text-blue-500"></i>
+                    My App
+                </div>
+                <div class="flex space-x-4">
+                    <a href="{% url 'clasificar' %}" class="cyber-button px-6 py-2 rounded-lg hover-glow transition-all duration-300 flex items-center gap-2">
+                        <i class="fas fa-upload text-blue-300"></i>
+                        Cargar Archivo
+                    </a>
+                    <a href="{% url 'peticiones' %}" class="cyber-button px-6 py-2 rounded-lg hover-glow transition-all duration-300 flex items-center gap-2">
+                        <i class="fas fa-list-alt text-purple-300"></i>
+                        Peticiones
+                    </a>
+                    <a href="{% url 'ayuda' %}" class="cyber-button px-6 py-2 rounded-lg hover-glow transition-all duration-300 flex items-center gap-2">
+                        <i class="fas fa-question-circle text-indigo-300"></i>
+                        Ayuda
+                    </a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main content -->
-    <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">Clasificación de Mensajes de Redes Sociales</h1>
+    <div class="container mx-auto p-6 relative z-10">
+        <h1 class="futuristic-title text-4xl font-bold mb-12 text-center glitch" >
+            Clasificación de Mensajes de Redes Sociales
+        </h1>
         
-        <div class="flex flex-col md:flex-row gap-6 mb-6">
+        <div class="flex flex-col md:flex-row gap-8 mb-8">
             <!-- Input section -->
-            <div class="flex-1">
-                <div class="bg-white rounded-lg card-shadow p-6">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-700">Entrada</h2>
-                    <textarea class="w-full h-96 p-4 border border-gray-200 rounded-md bg-gray-50 focus:outline-none" readonly>{% if entrada %}{{ entrada }}{% else %}No se ha cargado ningún archivo.{% endif %}</textarea>
+            <div class="flex-1 animate__animated animate__fadeInLeft">
+                <div class="neon-border glass p-6 scanner-effect">
+                    <h2 class="futuristic-title text-xl font-semibold mb-4 text-blue-400 flex items-center gap-2">
+                        <i class="fas fa-terminal"></i>
+                        Entrada
+                    </h2>
+                    <textarea class="w-full h-96 p-4 rounded-lg bg-black/50 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 matrix-bg" readonly>{% if entrada %}{{ entrada }}{% else %}No se ha cargado ningún archivo.{% endif %}</textarea>
                 </div>
             </div>
 
             <!-- Output section -->
-            <div class="flex-1">
-                <div class="bg-white rounded-lg card-shadow p-6">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-700">Salida</h2>
-                    <textarea class="w-full h-96 p-4 border border-gray-200 rounded-md bg-gray-50 focus:outline-none" readonly>{% if resultados %}{{ resultados|safe }}{% else %}No se ha generado ninguna respuesta aún.{% endif %}</textarea>
+            <div class="flex-1 animate__animated animate__fadeInRight">
+                <div class="neon-border glass p-6 scanner-effect">
+                    <h2 class="futuristic-title text-xl font-semibold mb-4 text-purple-400 flex items-center gap-2">
+                        <i class="fas fa-code"></i>
+                        Salida
+                    </h2>
+                    <textarea class="w-full h-96 p-4 rounded-lg bg-black/50 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 matrix-bg" readonly>{% if resultados %}{{ resultados|safe }}{% else %}No se ha generado ninguna respuesta aún.{% endif %}</textarea>
                 </div>
             </div>
         </div>
 
         <!-- Buttons and File Upload -->
-        <div class="flex justify-center items-center space-x-4">
+        <div class="flex justify-center items-center space-x-6 animate__animated animate__fadeInUp">
             <form action="{% url 'clasificar' %}" method="post" enctype="multipart/form-data" class="flex items-center space-x-4">
                 {% csrf_token %}
                 <div class="relative">
                     <input type="file" id="fileInput" name="archivo" accept=".xml" required
-                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     <label for="fileInput" 
-                           class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md transition duration-200 cursor-pointer">
+                           class="cyber-button px-8 py-3 rounded-lg hover-glow transition-all duration-300 cursor-pointer flex items-center gap-2">
+                        <i class="fas fa-file-upload"></i>
                         Seleccionar archivo
                     </label>
                 </div>
                 <button type="submit" 
-                        class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                        class="cyber-button bg-gradient-to-r from-green-400 to-emerald-600 px-8 py-3 rounded-lg hover-glow transition-all duration-300 flex items-center gap-2">
+                    <i class="fas fa-paper-plane"></i>
                     Enviar
                 </button>
             </form>
@@ -75,7 +317,8 @@
             <form action="{% url 'reset_bd' %}" method="post" class="inline">
                 {% csrf_token %}
                 <button type="submit" 
-                        class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                        class="cyber-button bg-gradient-to-r from-red-500 to-pink-600 px-8 py-3 rounded-lg hover-glow transition-all duration-300 flex items-center gap-2">
+                    <i class="fas fa-sync-alt"></i>
                     Reset
                 </button>
             </form>

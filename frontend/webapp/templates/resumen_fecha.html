@@ -1,225 +1,434 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <title>Resumen de Clasificación por Fecha</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
     <style>
-        .mensajes-container {
-            margin-top: 20px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+        :root {
+            --primary: #6d28d9;
+            --secondary: #1e40af;
+            --accent: #8b5cf6;
         }
-        .mensaje {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        body {
+            background: #0f0f1a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
-        .mensaje.positivo {
-            border-left: 5px solid rgb(75, 192, 192);
+
+        /* Estrellas */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
         }
-        .mensaje.negativo {
-            border-left: 5px solid rgb(255, 99, 132);
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            animation: starfall linear infinite;
         }
-        .mensaje.neutro {
-            border-left: 5px solid rgb(201, 203, 207);
+
+        @keyframes starfall {
+            0% {
+                transform: translateY(-100vh) translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) translateX(-200px);
+                opacity: 0;
+            }
         }
-        .mensaje p {
-            margin: 5px 0;
+
+        /* Generación dinámica de estrellas con diferentes tamaños y velocidades */
+        .star:nth-child(1) { left: 10%; animation-duration: 5s; }
+        .star:nth-child(2) { left: 20%; animation-duration: 7s; width: 3px; height: 3px; }
+        .star:nth-child(3) { left: 30%; animation-duration: 6s; }
+        .star:nth-child(4) { left: 40%; animation-duration: 8s; width: 1px; height: 1px; }
+        .star:nth-child(5) { left: 50%; animation-duration: 5s; }
+        .star:nth-child(6) { left: 60%; animation-duration: 9s; width: 3px; height: 3px; }
+        .star:nth-child(7) { left: 70%; animation-duration: 7s; }
+        .star:nth-child(8) { left: 80%; animation-duration: 6s; width: 2px; height: 2px; }
+        .star:nth-child(9) { left: 90%; animation-duration: 8s; }
+        .star:nth-child(10) { left: 95%; animation-duration: 5s; width: 1px; height: 1px; }
+
+        .content-container {
+            position: relative;
+            z-index: 1;
         }
-        .mensaje strong {
-            color: #555;
+
+        .cyber-border {
+            border: 2px solid var(--accent);
+            position: relative;
+            overflow: hidden;
         }
+
+        .cyber-border::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent));
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .glow-text {
+            text-shadow: 0 0 10px var(--accent);
+        }
+
+        .neo-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+        }
+
         select, button {
-            padding: 8px;
-            margin: 5px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--accent);
+            transition: all 0.3s ease;
         }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
+
+        select:hover, button:hover {
+            box-shadow: 0 0 15px var(--accent);
         }
-        button:hover {
-            background-color: #45a049;
+
+        .gradient-background {
+            background: linear-gradient(45deg, #1e1b4b, #2563eb);
         }
-        .summary {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
+        :root {
+            --primary: #6d28d9;
+            --secondary: #1e40af;
+            --accent: #8b5cf6;
         }
-        canvas {
-            max-width: 600px;
-            margin: 20px auto;
+    
+        body {
+            background: #080810;
+            color: #e2e8f0;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
+    
+        /* Estrellas mejoradas */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+    
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #fff, 0 0 20px #fff;
+            animation: starfall linear infinite;
+        }
+    
+        .star.small {
+            width: 1px;
+            height: 1px;
+        }
+    
+        .star.medium {
+            width: 2px;
+            height: 2px;
+        }
+    
+        .star.large {
+            width: 3px;
+            height: 3px;
+        }
+    
+        .star.extra-large {
+            width: 4px;
+            height: 4px;
+        }
+    
+        @keyframes starfall {
+            0% {
+                transform: translateY(-100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) translateX(-200px);
+                opacity: 0;
+            }
+        }
+    
+        /* Generación dinámica de más estrellas con diferentes propiedades */
+        .star:nth-child(1) { left: 5%; animation-duration: 3s; }
+        .star:nth-child(2) { left: 10%; animation-duration: 4s; animation-delay: 1s; }
+        .star:nth-child(3) { left: 15%; animation-duration: 5s; animation-delay: 0.5s; }
+        .star:nth-child(4) { left: 20%; animation-duration: 4.5s; animation-delay: 0.2s; }
+        .star:nth-child(5) { left: 25%; animation-duration: 3.5s; animation-delay: 0.7s; }
+        .star:nth-child(6) { left: 30%; animation-duration: 4.2s; animation-delay: 0.3s; }
+        .star:nth-child(7) { left: 35%; animation-duration: 3.8s; animation-delay: 0.9s; }
+        .star:nth-child(8) { left: 40%; animation-duration: 4.7s; animation-delay: 0.4s; }
+        .star:nth-child(9) { left: 45%; animation-duration: 3.3s; animation-delay: 0.6s; }
+        .star:nth-child(10) { left: 50%; animation-duration: 4.4s; animation-delay: 0.8s; }
+        .star:nth-child(11) { left: 55%; animation-duration: 3.7s; animation-delay: 0.2s; }
+        .star:nth-child(12) { left: 60%; animation-duration: 4.9s; animation-delay: 0.5s; }
+        .star:nth-child(13) { left: 65%; animation-duration: 3.4s; animation-delay: 0.7s; }
+        .star:nth-child(14) { left: 70%; animation-duration: 4.3s; animation-delay: 0.3s; }
+        .star:nth-child(15) { left: 75%; animation-duration: 3.9s; animation-delay: 0.9s; }
+        .star:nth-child(16) { left: 80%; animation-duration: 4.6s; animation-delay: 0.4s; }
+        .star:nth-child(17) { left: 85%; animation-duration: 3.2s; animation-delay: 0.6s; }
+        .star:nth-child(18) { left: 90%; animation-duration: 4.8s; animation-delay: 0.8s; }
+        .star:nth-child(19) { left: 95%; animation-duration: 3.6s; animation-delay: 0.3s; }
+        .star:nth-child(20) { left: 98%; animation-duration: 4.1s; animation-delay: 0.5s; }
+    
     </style>
 </head>
 <body>
+    <!-- Fondo de estrellas -->
+    <div class="stars">
+        <!-- Estrellas pequeñas -->
+        <div class="star small"></div>
+        <div class="star small"></div>
+        <div class="star small"></div>
+        <div class="star small"></div>
+        <div class="star small"></div>
+        <!-- Estrellas medianas -->
+        <div class="star medium"></div>
+        <div class="star medium"></div>
+        <div class="star medium"></div>
+        <div class="star medium"></div>
+        <div class="star medium"></div>
+        <!-- Estrellas grandes -->
+        <div class="star large"></div>
+        <div class="star large"></div>
+        <div class="star large"></div>
+        <div class="star large"></div>
+        <div class="star large"></div>
+        <!-- Estrellas extra grandes -->
+        <div class="star extra-large"></div>
+        <div class="star extra-large"></div>
+        <div class="star extra-large"></div>
+        <div class="star extra-large"></div>
+        <div class="star extra-large"></div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="content-container">
         <!-- Navbar -->
-    <nav class="gradient-background text-white shadow-lg">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <div class="font-bold text-xl tracking-tight">My App</div>
-                <div class="flex space-x-2">
-                    <a href="{% url 'clasificar' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Cargar Archivo</a>
-                    <a href="{% url 'peticiones' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Peticiones</a>
-                    <a href="{% url 'ayuda' %}" class="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200">Ayuda</a>
+        <nav class="gradient-background shadow-lg border-b border-purple-500">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <div class="font-bold text-2xl tracking-wider glow-text">My App</div>
+                    <div class="flex space-x-4">
+                        <a href="{% url 'clasificar' %}" class="px-6 py-2 rounded-lg hover:bg-purple-600 transition duration-300 cyber-border">Cargar Archivo</a>
+                        <a href="{% url 'peticiones' %}" class="px-6 py-2 rounded-lg hover:bg-purple-600 transition duration-300 cyber-border">Peticiones</a>
+                        <a href="{% url 'ayuda' %}" class="px-6 py-2 rounded-lg hover:bg-purple-600 transition duration-300 cyber-border">Ayuda</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
-    <h1>Resumen de Clasificación por Fecha</h1>
-    
-    <form method="post" action="{% url 'resumen_fecha' %}">
-        {% csrf_token %}
-        <label for="fecha">Fecha:</label>
-        <select id="fecha" name="fecha" required>
-            {% for fecha in fechas %}
-                <option value="{{ fecha }}" {% if fecha == fecha_seleccionada %}selected{% endif %}>{{ fecha }}</option>
-            {% endfor %}
-        </select>
-        
-        <label for="empresa">Empresa:</label>
-        <select id="empresa" name="empresa" required>
-            <option value="todas">Todas</option>
-            {% for emp in empresas %}
-                <option value="{{ emp }}" {% if emp == empresa %}selected{% endif %}>{{ emp }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Filtrar</button>
-    </form>
+        </nav>
 
-    {% if data %}
-        <div class="summary">
-            <h2>Resultados para {{ fecha }} - {{ empresa }}</h2>
-            <p>Total de Mensajes: {{ data.total_mensajes }}</p>
-            <p>Total de Mensajes Positivos: {{ data.total_positivos }}</p>
-            <p>Total de Mensajes Negativos: {{ data.total_negativos }}</p>
-            <p>Total de Mensajes Neutros: {{ data.total_neutros }}</p>
-        </div>
-
-        <canvas id="resultChart"></canvas>
-        
-        {% if mensajes %}
-        <div class="mensajes-container">
-            <h3>Servicios por Empresa</h3>
-            {% for mensaje in mensajes %}
-                <div class="mensaje">
-                    <h4>{{ mensaje.empresa }} - {{ mensaje.servicio }}</h4>
-                    <p><strong>Total Mensajes:</strong> {{ mensaje.total }}</p>
-                    <p><strong>Mensajes Positivos:</strong> {{ mensaje.positivos }}</p>
-                    <p><strong>Mensajes Negativos:</strong> {{ mensaje.negativos }}</p>
-                    <p><strong>Mensajes Neutros:</strong> {{ mensaje.neutros }}</p>
+        <div class="container mx-auto px-4 py-8">
+            <h1 class="text-4xl font-bold text-center mb-8 glow-text">Resumen de Clasificación por Fecha</h1>
+            
+            <form method="post" action="{% url 'resumen_fecha' %}" class="neo-card p-6 rounded-xl mb-8">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="fecha" class="block mb-2">Fecha:</label>
+                        <select id="fecha" name="fecha" required class="w-full p-3 rounded-lg bg-gray-800 text-white">
+                            {% for fecha in fechas %}
+                                <option value="{{ fecha }}" {% if fecha == fecha_seleccionada %}selected{% endif %}>{{ fecha }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="empresa" class="block mb-2">Empresa:</label>
+                        <select id="empresa" name="empresa" required class="w-full p-3 rounded-lg bg-gray-800 text-white">
+                            <option value="todas">Todas</option>
+                            {% for emp in empresas %}
+                                <option value="{{ emp }}" {% if emp == empresa %}selected{% endif %}>{{ emp }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p>No se encontraron mensajes para los criterios seleccionados.</p>
-    {% endif %}
+                <button type="submit" class="mt-6 w-full md:w-auto px-8 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition duration-300 cyber-border">Filtrar</button>
+            </form>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Primero genera la gráfica
-            const ctx = document.getElementById('resultChart').getContext('2d');
-            const data = {
-                labels: ['Positivos', 'Negativos', 'Neutros'],
-                datasets: [{
-                    label: 'Cantidad de Mensajes',
-                    data: [{{ data.total_positivos }}, {{ data.total_negativos }}, {{ data.total_neutros }}],
-                    backgroundColor: [
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(201, 203, 207, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgb(75, 192, 192)',
-                        'rgb(255, 99, 132)',
-                        'rgb(201, 203, 207)'
-                    ],
-                    borderWidth: 1
-                }]
-            };
-            const config = {
-                type: 'bar',
-                data: data,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Distribución de Sentimientos en Mensajes'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                precision: 0
+            {% if data %}
+                <div class="neo-card p-8 rounded-xl mb-8">
+                    <h2 class="text-2xl font-bold mb-6 text-center glow-text">Resultados para {{ fecha }} - {{ empresa }}</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="p-4 rounded-lg bg-purple-900/30 border border-purple-500">
+                            <p class="text-lg">Total de Mensajes</p>
+                            <p class="text-3xl font-bold">{{ data.total_mensajes }}</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-green-900/30 border border-green-500">
+                            <p class="text-lg">Mensajes Positivos</p>
+                            <p class="text-3xl font-bold">{{ data.total_positivos }}</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-red-900/30 border border-red-500">
+                            <p class="text-lg">Mensajes Negativos</p>
+                            <p class="text-3xl font-bold">{{ data.total_negativos }}</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-gray-900/30 border border-gray-500">
+                            <p class="text-lg">Mensajes Neutros</p>
+                            <p class="text-3xl font-bold">{{ data.total_neutros }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="neo-card p-6 rounded-xl mb-8">
+                    <canvas id="resultChart"></canvas>
+                </div>
+                
+                {% if mensajes %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for mensaje in mensajes %}
+                        <div class="neo-card p-6 rounded-xl">
+                            <h4 class="text-xl font-bold mb-4 glow-text">{{ mensaje.empresa }} - {{ mensaje.servicio }}</h4>
+                            <div class="space-y-2">
+                                <p><strong class="text-purple-400">Total Mensajes:</strong> {{ mensaje.total }}</p>
+                                <p><strong class="text-green-400">Mensajes Positivos:</strong> {{ mensaje.positivos }}</p>
+                                <p><strong class="text-red-400">Mensajes Negativos:</strong> {{ mensaje.negativos }}</p>
+                                <p><strong class="text-gray-400">Mensajes Neutros:</strong> {{ mensaje.neutros }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const ctx = document.getElementById('resultChart').getContext('2d');
+                        const data = {
+                            labels: ['Positivos', 'Negativos', 'Neutros'],
+                            datasets: [{
+                                label: 'Cantidad de Mensajes',
+                                data: [{{ data.total_positivos }}, {{ data.total_negativos }}, {{ data.total_neutros }}],
+                                backgroundColor: [
+                                    'rgba(74, 222, 128, 0.8)',
+                                    'rgba(248, 113, 113, 0.8)',
+                                    'rgba(148, 163, 184, 0.8)'
+                                ],
+                                borderColor: [
+                                    'rgb(34, 197, 94)',
+                                    'rgb(239, 68, 68)',
+                                    'rgb(100, 116, 139)'
+                                ],
+                                borderWidth: 2
+                            }]
+                        };
+                        const config = {
+                            type: 'bar',
+                            data: data,
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                        labels: {
+                                            color: '#e2e8f0'
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Distribución de Sentimientos en Mensajes',
+                                        color: '#e2e8f0'
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            stepSize: 1,
+                                            precision: 0,
+                                            color: '#e2e8f0'
+                                        },
+                                        grid: {
+                                            color: 'rgba(226, 232, 240, 0.1)'
+                                        }
+                                    },
+                                    x: {
+                                        ticks: {
+                                            color: '#e2e8f0'
+                                        },
+                                        grid: {
+                                            color: 'rgba(226, 232, 240, 0.1)'
+                                        }
+                                    }
+                                }
                             }
-                        }
-                    }
-                }
-            };
-            
-            // Crear el gráfico y luego generar el PDF
-            const chart = new Chart(ctx, config);
-    
-            // Función para generar el PDF
-            const generatePDF = () => {
-                const element = document.body; // Selecciona todo el cuerpo de la página
-                const now = new Date();
-                const filename = `resumen_${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}-${now.getSeconds().toString().padStart(2, '0')}.pdf`;
-            
-                const options = {
-                    filename: filename,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                };
-            
-                html2pdf()
-                    .from(element)
-                    .set(options)
-                    .toPdf()
-                    .get('pdf')
-                    .then(pdf => {
-                        // Enviar el PDF al servidor
-                        const formData = new FormData();
-                        formData.append('pdf', pdf.output('blob'), filename);
-            
-                        fetch('/guardar_pdf/', {
-                            method: 'POST',
-                            body: formData
-                        }).then(response => {
-                            if (response.ok) {
-                                console.log('PDF generado y guardado en el servidor.');
-                            } else {
-                                console.error('Error al guardar el PDF en el servidor.');
-                            }
-                        });
+                        };
+                        
+                        const chart = new Chart(ctx, config);
+                
+                        const generatePDF = () => {
+                            const element = document.body;
+                            const now = new Date();
+                            const filename = `resumen_${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}-${now.getSeconds().toString().padStart(2, '0')}.pdf`;
+                        
+                            const options = {
+                                filename: filename,
+                                image: { type: 'jpeg', quality: 0.98 },
+                                html2canvas: { scale: 2 },
+                                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                            };
+                        
+                            html2pdf()
+                                .from(element)
+                                .set(options)
+                                .toPdf()
+                                .get('pdf')
+                                .then(pdf => {
+                                    const formData = new FormData();
+                                    formData.append('pdf', pdf.output('blob'), filename);
+                        
+                                    fetch('/guardar_pdf/', {
+                                        method: 'POST',
+                                        body: formData
+                                    }).then(response => {
+                                        if (response.ok) {
+                                            console.log('PDF generado y guardado en el servidor.');
+                                        } else {
+                                            console.error('Error al guardar el PDF en el servidor.');
+                                        }
+                                    });
+                                });
+                        };
+                        
+                        setTimeout(generatePDF, 500);
                     });
-            };
-            
-    
-            // Llama a la función para generar el PDF después de un breve retraso para asegurar que la gráfica esté cargada
-            setTimeout(generatePDF, 500); // Retraso de 500 ms para asegurar la carga completa del gráfico
-        });
-    </script>
-
-        
-    {% endif %}
+                </script>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>
